@@ -19,6 +19,14 @@ Jastrow checks whether a GenLayer contract spec is decidable before deploy.
 It returns the concrete inputs that split validators, not just an average.
 ```
 
+Tie the name to the product:
+
+```text
+Jastrow is named after the duck-rabbit illusion: one drawing, two valid
+readings. Contract specs can fail the same way: one input, two validator
+readings. Jastrow finds those duck-rabbit inputs before deploy.
+```
+
 Run the instant demo command:
 
 ```bash

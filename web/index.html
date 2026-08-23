@@ -195,6 +195,54 @@ p { text-wrap: pretty; }
   color: var(--ink);
 }
 .hero-gloss { margin: 22px 0 0; color: var(--prose); font-size: 15px; max-width: 38ch; }
+.jastrow-map {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: stretch;
+  max-width: 620px;
+}
+.map-card {
+  background: var(--milled);
+  border: 1px solid var(--edge);
+  padding: 12px 14px;
+  min-height: 86px;
+}
+.map-card .small {
+  display: block;
+  font-family: var(--data);
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 7px;
+}
+.map-card .large {
+  display: block;
+  font-family: var(--sans);
+  font-variation-settings: "wdth" 98, "wght" 560;
+  font-size: clamp(17px, 1.9vw, 22px);
+  line-height: 1.18;
+  color: var(--ink);
+}
+.map-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--data);
+  color: var(--dial);
+  padding: 0 2px;
+}
+.map-note {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  max-width: 64ch;
+}
+.map-note em {
+  color: var(--dial);
+  font-style: normal;
+}
 .hero-actions {
   display: flex;
   flex-wrap: wrap;
@@ -259,6 +307,11 @@ p { text-wrap: pretty; }
   font-size: 11.5px;
   color: var(--muted);
   line-height: 1.5;
+}
+.hero-plate figcaption strong {
+  display: block;
+  color: var(--ink);
+  font-weight: 400;
 }
 
 /* ---------- the three figures ---------- */
@@ -802,6 +855,8 @@ details .after { margin: 0; padding: 0 20px 20px; color: var(--muted); font-size
   .hero { grid-template-columns: 1fr; }
   .hero-plate { min-height: 240px; order: -1; }
   .hero-plate img { width: 128%; right: -14%; }
+  .jastrow-map { grid-template-columns: 1fr; }
+  .map-arrow { justify-content: flex-start; min-height: 12px; }
   .hero-link { width: 100%; justify-content: center; }
   .figures > div { border-left: 0; border-top: 1px solid var(--hair); padding-left: 0; padding-right: 0; }
   .figures > div:first-child { border-top: 0; }
@@ -844,6 +899,18 @@ details .after { margin: 0; padding: 0 20px 20px; color: var(--muted); font-size
       <div class="datum-label">Mean divergence</div>
       <div class="hero-value data" id="mean"></div>
       <p class="hero-gloss">Check a GenLayer contract spec before deploy. Jastrow finds the exact inputs that make validators split, then turns that evidence into a CI verdict.</p>
+      <div class="jastrow-map" aria-label="Duck-rabbit analogy">
+        <div class="map-card">
+          <span class="small">Jastrow illusion</span>
+          <span class="large">one drawing,<br>two valid readings</span>
+        </div>
+        <div class="map-arrow">→</div>
+        <div class="map-card">
+          <span class="small">GenLayer spec</span>
+          <span class="large">one input,<br>two validator readings</span>
+        </div>
+        <p class="map-note">The bug is not always the viewer. Sometimes the object is a <em>duck-rabbit</em>. Jastrow finds those inputs in contract specs.</p>
+      </div>
       <div class="hero-actions">
         <a class="hero-link primary" href="#contract-check">Watch the check</a>
         <a class="hero-link" href="#live-call">Run live probe</a>
@@ -852,7 +919,7 @@ details .after { margin: 0; padding: 0 20px 20px; color: var(--muted); font-size
     </div>
     <figure class="hero-plate" style="margin:0">
       <img src="assets/jastrow-1899.webp" alt="The duck-rabbit figure printed in Fliegende Blatter in 1892, read here as a duck facing left">
-      <figcaption>The figure that gives the project its name, printed in Munich on 23 October 1892.</figcaption>
+      <figcaption><strong>Duck-rabbit = the project model.</strong> One object, two readings; one spec, two validator verdicts.</figcaption>
     </figure>
   </div>
 

@@ -5,6 +5,11 @@ written rule is clear enough to survive validator consensus.
 
 It does not try to be a better judge. It measures when judges stop agreeing.
 
+The name is literal. Joseph Jastrow's duck-rabbit is one drawing with two valid
+readings. Jastrow looks for the same failure mode in GenLayer contracts: one
+specification and one input that produce two validator readings. The ambiguous
+object is the spec, not automatically the validator.
+
 The contract stores a spec, a closed answer set, and a battery of inputs. The
 runner sends the same inputs through GenLayer consensus several times. The
 report shows which inputs converge, which inputs split, and which transactions
