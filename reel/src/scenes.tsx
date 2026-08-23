@@ -469,7 +469,7 @@ export const Card: React.FC = () => {
         />
         <Fade from={beats(3)}>
           <div style={{ fontFamily: F.data, fontSize: 58, color: C.dial, letterSpacing: "0.01em" }}>
-            jastrow.vercel.app
+            jastrow.live
           </div>
           <div style={{ marginTop: 26 }}>
             <Body size={33} color={C.muted}>

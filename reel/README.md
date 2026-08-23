@@ -50,7 +50,7 @@ marks in scene six land one per beat rather than approximately on the beat.
 | 23 to 27 | 58.1 to 68.2 | the failing input settles onto a detent |
 | 27 to 31 | 68.2 to 78.3 | every input, worst first |
 | 31 to 34 | 78.3 to 85.9 | live proof layer and receipt caveat |
-| 34 to 36 | 85.9 to 90.9 | jastrow.vercel.app |
+| 34 to 36 | 85.9 to 90.9 | jastrow.live |
 
 ## The scale is the same arithmetic
 
