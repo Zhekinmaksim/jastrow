@@ -14,6 +14,7 @@ import json
 import os
 import pathlib
 import re
+import select
 import subprocess
 import sys
 import time
@@ -108,11 +109,18 @@ def _submit_once(args, input_id: int, label: str, round_index: int) -> dict:
         tx_hash = ""
         while time.time() < deadline:
             assert proc.stdout is not None
+            ready, _, _ = select.select([proc.stdout], [], [], 0.25)
+            if not ready:
+                if proc.poll() is not None:
+                    rest = proc.stdout.read()
+                    if rest:
+                        combined += rest
+                    break
+                continue
             line = proc.stdout.readline()
             if not line:
                 if proc.poll() is not None:
                     break
-                time.sleep(0.1)
                 continue
             combined += line
             match = TX_RE.search(line) if "Transaction Hash" in line else None
@@ -139,7 +147,13 @@ def _submit_once(args, input_id: int, label: str, round_index: int) -> dict:
             proc.wait(timeout=3)
         except subprocess.TimeoutExpired:
             proc.kill()
+            try:
+                proc.wait(timeout=1)
+            except subprocess.TimeoutExpired:
+                pass
         last_output = combined
+        if time.time() >= deadline:
+            last_output += "\n[submit_probes] timed out waiting for tx hash after " + str(args.hash_timeout) + "s"
         if "-32005" not in combined and "node is at capacity" not in combined:
             break
         match = re.search(r"retry in ~?(\d+)ms", combined)
@@ -163,6 +177,12 @@ def main() -> int:
     parser.add_argument("--delay", type=float, default=0.0)
     parser.add_argument("--hash-timeout", type=float, default=90.0)
     parser.add_argument("--attempts", type=int, default=8)
+    parser.add_argument(
+        "--max-new",
+        type=int,
+        default=0,
+        help="maximum number of new transactions to submit in this run; 0 means no limit",
+    )
     args = parser.parse_args()
 
     if not args.address:
@@ -185,6 +205,9 @@ def main() -> int:
                 print("skip " + str(item["label"]) + " r" + str(round_index))
                 continue
             done += 1
+            if args.max_new and done > args.max_new:
+                print("max-new reached; stop after " + str(args.max_new) + " new attempts")
+                return 0
             row = _submit_once(args, int(item["input_id"]), str(item["label"]), round_index)
             if row["tx_hash"].lower() not in seen_hashes:
                 _append_jsonl(manifest, row)
