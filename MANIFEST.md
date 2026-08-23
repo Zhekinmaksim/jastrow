@@ -23,6 +23,7 @@
 | `scripts/jastrow_gate.py` | CI gate over a Jastrow report |
 | `scripts/corpus_snapshot.py` | derives builder-program corpus scoring context |
 | `data/portal-corpus-summary.json` | derived summary from the local 1,329-project corpus |
+| `examples/demo-ambiguous-report.json` | small non-chain report for recording the CI gate flow |
 
 ## Web
 
@@ -52,6 +53,7 @@
 | `README.md` | human-readable project overview and CI gate docs |
 | `DEPLOY.md` | runbook |
 | `SUBMISSION.md` | portal copy draft |
+| `DEMO.md` | recording runbook for the submission video |
 | `COSTS.md` | transaction arithmetic and receipt costs |
 | `TODO.md` | remaining live-data tasks |
 | `RUN-2026-08-23.md` | current Bradbury run status and archived first-gate evidence |

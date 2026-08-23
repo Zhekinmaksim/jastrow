@@ -117,7 +117,7 @@ a:focus-visible, summary:focus-visible {
 
 h2 {
   font-family: var(--sans);
-  font-variation-settings: "wdth" 96, "wght" 700;
+  font-variation-settings: "wdth" 98, "wght" 610;
   font-size: clamp(26px, 3.4vw, 38px);
   line-height: 1.08;
   letter-spacing: -.01em;
@@ -133,7 +133,7 @@ p { text-wrap: pretty; }
    a section eyebrow: it names the number directly under it. */
 .datum-label {
   font-family: var(--sans);
-  font-variation-settings: "wdth" 76, "wght" 600;
+  font-variation-settings: "wdth" 78, "wght" 520;
   font-size: 11px;
   letter-spacing: .2em;
   text-transform: uppercase;
@@ -154,7 +154,7 @@ p { text-wrap: pretty; }
 .wordmark {
   margin: 0;
   font-family: var(--sans);
-  font-variation-settings: "wdth" 134, "wght" 800;
+  font-variation-settings: "wdth" 132, "wght" 650;
   font-size: 26px;
   letter-spacing: .015em;
   line-height: 1;
@@ -195,6 +195,27 @@ p { text-wrap: pretty; }
   color: var(--ink);
 }
 .hero-gloss { margin: 22px 0 0; color: var(--prose); font-size: 15px; max-width: 38ch; }
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+.hero-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--edge);
+  font-family: var(--data);
+  font-size: 12px;
+  text-decoration: none;
+  color: var(--prose);
+}
+.hero-link.primary {
+  border-color: var(--dial);
+  color: var(--dial);
+}
 
 /* The spec as a whole on one axis. No detents here on purpose: a mean is
    derived from rows with different sample sizes, so no single set of reachable
@@ -279,7 +300,7 @@ p { text-wrap: pretty; }
 }
 .provenance b {
   font-family: var(--sans);
-  font-variation-settings: "wdth" 82, "wght" 700;
+  font-variation-settings: "wdth" 84, "wght" 600;
   letter-spacing: .16em;
   text-transform: uppercase;
 }
@@ -304,7 +325,7 @@ p { text-wrap: pretty; }
 .live-title {
   margin: 0 0 8px;
   font-family: var(--sans);
-  font-variation-settings: "wdth" 96, "wght" 700;
+  font-variation-settings: "wdth" 98, "wght" 610;
   font-size: 20px;
   line-height: 1.2;
 }
@@ -339,7 +360,7 @@ p { text-wrap: pretty; }
   color: #17120a;
   padding: 0 16px;
   font-family: var(--sans);
-  font-variation-settings: "wdth" 86, "wght" 760;
+  font-variation-settings: "wdth" 88, "wght" 620;
   cursor: pointer;
   white-space: nowrap;
 }
@@ -363,6 +384,51 @@ p { text-wrap: pretty; }
 .live-side dl { margin: 0; display: grid; gap: 10px; }
 .live-side dt { font-family: var(--data); font-size: 12px; color: var(--muted); }
 .live-side dd { margin: 2px 0 0; font-family: var(--data); font-size: 12px; word-break: break-word; }
+
+/* ---------- contract check demo ---------- */
+
+.contract-check {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: minmax(0, .9fr) minmax(320px, 1.1fr);
+  gap: 1px;
+  background: var(--hair);
+  border: 1px solid var(--hair);
+}
+.contract-check > div {
+  background: var(--face);
+  padding: 20px;
+}
+.contract-check h2 {
+  margin-bottom: 10px;
+}
+.contract-check .lead {
+  margin: 0;
+  color: var(--prose);
+  max-width: 58ch;
+}
+.check-points {
+  display: grid;
+  gap: 9px;
+  margin-top: 16px;
+  font-family: var(--data);
+  font-size: 12px;
+  color: var(--muted);
+}
+.check-points span {
+  display: block;
+  border-top: 1px solid var(--hair);
+  padding-top: 9px;
+}
+.check-console {
+  margin: 0;
+  background: var(--milled);
+  border: 1px solid var(--edge);
+  color: var(--prose);
+  min-height: 238px;
+}
+.check-console .hot { color: var(--dial); }
+.check-console .soft { color: var(--muted); }
 
 /* ---------- builder framing ---------- */
 
@@ -389,9 +455,9 @@ p { text-wrap: pretty; }
 .positioning .claim {
   margin: 0;
   font-family: var(--sans);
-  font-variation-settings: "wdth" 96, "wght" 720;
-  font-size: clamp(20px, 2.2vw, 28px);
-  line-height: 1.18;
+  font-variation-settings: "wdth" 98, "wght" 560;
+  font-size: clamp(19px, 2vw, 26px);
+  line-height: 1.23;
   letter-spacing: -.01em;
 }
 .positioning .claim em { font-style: normal; color: var(--dial); }
@@ -475,7 +541,7 @@ p { text-wrap: pretty; }
 .tax-card h3 {
   margin: 0 0 10px;
   font-family: var(--sans);
-  font-variation-settings: "wdth" 92, "wght" 720;
+  font-variation-settings: "wdth" 96, "wght" 600;
   font-size: 16px;
 }
 .tax-card p { margin: 0; color: var(--muted); font-size: 13.5px; }
@@ -557,7 +623,7 @@ section { padding: clamp(60px, 8vw, 104px) 0 0; }
 .reading-id { padding-left: clamp(14px, 2vw, 24px); }
 .reading-label {
   font-family: var(--sans);
-  font-variation-settings: "wdth" 92, "wght" 700;
+  font-variation-settings: "wdth" 96, "wght" 590;
   font-size: 17px;
   letter-spacing: .02em;
 }
@@ -736,6 +802,7 @@ details .after { margin: 0; padding: 0 20px 20px; color: var(--muted); font-size
   .hero { grid-template-columns: 1fr; }
   .hero-plate { min-height: 240px; order: -1; }
   .hero-plate img { width: 128%; right: -14%; }
+  .hero-link { width: 100%; justify-content: center; }
   .figures > div { border-left: 0; border-top: 1px solid var(--hair); padding-left: 0; padding-right: 0; }
   .figures > div:first-child { border-top: 0; }
   .reading { grid-template-columns: 1fr; padding: 16px clamp(14px, 4vw, 20px); background: var(--face); }
@@ -747,6 +814,7 @@ details .after { margin: 0; padding: 0 20px 20px; color: var(--muted); font-size
   .live-panel { grid-template-columns: 1fr; }
   .live-form { grid-template-columns: 1fr; }
   .live-button { width: 100%; }
+  .contract-check { grid-template-columns: 1fr; }
   .positioning,
   .tool-gate,
   .challenge,
@@ -775,7 +843,11 @@ details .after { margin: 0; padding: 0 20px 20px; color: var(--muted); font-size
     <div class="faceplate">
       <div class="datum-label">Mean divergence</div>
       <div class="hero-value data" id="mean"></div>
-      <p class="hero-gloss">A pre-deploy gate for GenLayer specs: find the exact inputs that make validators split before users put value behind the rule.</p>
+      <p class="hero-gloss">Check a GenLayer contract spec before deploy. Jastrow finds the exact inputs that make validators split, then turns that evidence into a CI verdict.</p>
+      <div class="hero-actions">
+        <a class="hero-link primary" href="#contract-check">Watch the check</a>
+        <a class="hero-link" href="#live-call">Run live probe</a>
+      </div>
       <div class="hero-axis" id="hero-axis"></div>
     </div>
     <figure class="hero-plate" style="margin:0">
@@ -786,7 +858,26 @@ details .after { margin: 0; padding: 0 20px 20px; color: var(--muted); font-size
 
   <dl class="figures" id="figures"></dl>
   <div id="provenance"></div>
-  <section class="live-panel" aria-labelledby="live-title">
+
+  <section class="contract-check" id="contract-check" aria-labelledby="contract-check-title">
+    <div>
+      <h2 id="contract-check-title">Contract spec check</h2>
+      <p class="lead">The killer feature is not another chart. It is a deploy gate: run the same contract inputs through consensus, then fail the build on the concrete cases that split validators.</p>
+      <div class="check-points">
+        <span>Input-level evidence: not “the model is bad”, but “this clause is underspecified”.</span>
+        <span>CI-friendly verdicts: <code>DECIDABLE</code>, <code>AMBIGUOUS</code>, <code>UNDECIDABLE</code>.</span>
+        <span>For the demo video: this path is instant; the live chain call below is the proof layer.</span>
+      </div>
+    </div>
+    <pre class="check-console"><span class="soft">$</span> python3 cli/jastrow.py run examples/demo-ambiguous-report.json --threshold 0.25
+<span class="hot">AMBIGUOUS</span>
+  divergence at or above 0.250:
+  in-image=0.480, in-reply=0.320
+
+<span class="soft">Fix these inputs, rerun the battery, then ship.</span></pre>
+  </section>
+
+  <section class="live-panel" id="live-call" aria-labelledby="live-title">
     <div class="live-main">
       <h2 class="live-title" id="live-title">Live contract call</h2>
       <p class="live-copy">Run one probe against the deployed contract. The UI returns a hash immediately, then follows the transaction through accepted, finalized, undetermined, or error states.</p>
@@ -874,7 +965,7 @@ echo $?</pre>
 
     <div class="resolution">
       <div>
-        <h3 style="font-family:var(--sans);font-variation-settings:'wdth' 96,'wght' 700;font-size:20px;margin:0 0 12px">What another probe would buy</h3>
+        <h3 style="font-family:var(--sans);font-variation-settings:'wdth' 98,'wght' 590;font-size:20px;margin:0 0 12px">What another probe would buy</h3>
         <p class="prose" style="font-size:14.5px">Resolution is arithmetic, not opinion. At the sample size above, only the marked values are reachable at all, so a reading of 0.480 does not mean the true rate is 0.48. Doubling the sample roughly halves the gap between detents and doubles the bill, which is why the default stops where it does.</p>
       </div>
       <div class="res-rows" id="res-rows"></div>

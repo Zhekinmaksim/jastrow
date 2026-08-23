@@ -109,6 +109,17 @@ The report is useful only if it can fail a build. Jastrow ships a small gate:
 python3 cli/jastrow.py run web/report.json --threshold 0.25
 ```
 
+For a video walkthrough that does not wait for Bradbury receipts, use the demo
+report:
+
+```bash
+python3 cli/jastrow.py run examples/demo-ambiguous-report.json --threshold 0.25
+```
+
+It should return `AMBIGUOUS` and list the concrete inputs that need rewriting.
+That demo file is not chain evidence; it exists so the contract-check flow is
+recordable without waiting for testnet settlement.
+
 Exit codes:
 
 | verdict | exit | meaning |
@@ -194,6 +205,7 @@ scripts/corpus_snapshot.py  derives scoring context from the builder corpus
 web/index.html              public report page
 web/src/live.js             browser wallet call to the live contract
 data/portal-corpus-summary.json  derived builder-program corpus snapshot
+examples/demo-ambiguous-report.json  instant demo for the CI gate
 test/                       local tests with a small GenLayer stub
 reel/                       video source
 ```

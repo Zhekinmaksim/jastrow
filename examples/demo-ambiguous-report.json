@@ -1,0 +1,44 @@
+{
+  "title": "Demo campaign rule",
+  "spec_id": 0,
+  "spec_hash": "demo",
+  "vocabulary": ["ACCEPT", "REJECT"],
+  "provenance": {
+    "kind": "demo",
+    "source": "hand-sized report for video walkthroughs; not chain evidence"
+  },
+  "rows": [
+    {
+      "input_id": 4,
+      "label": "in-image",
+      "rated": true,
+      "d_milli": 480,
+      "malformed_milli": 0,
+      "distribution": "ACCEPT:3|REJECT:2"
+    },
+    {
+      "input_id": 5,
+      "label": "in-reply",
+      "rated": true,
+      "d_milli": 320,
+      "malformed_milli": 0,
+      "distribution": "ACCEPT:4|REJECT:1"
+    },
+    {
+      "input_id": 0,
+      "label": "clean",
+      "rated": true,
+      "d_milli": 0,
+      "malformed_milli": 0,
+      "distribution": "ACCEPT:5|REJECT:0"
+    },
+    {
+      "input_id": 1,
+      "label": "missing",
+      "rated": true,
+      "d_milli": 0,
+      "malformed_milli": 0,
+      "distribution": "ACCEPT:0|REJECT:5"
+    }
+  ]
+}
