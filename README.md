@@ -131,12 +131,10 @@ python3 cli/jastrow.py --print deploy
 Register the reference battery and inputs:
 
 ```bash
-python3 cli/jastrow.py --print battery calibration/battery.json --k 0
+python3 scripts/register_battery.py calibration/battery.json --print
 ```
 
-If you prefer the current CLI path, register manually with `new` and `add`.
-The important part is that the expensive probe stage is submitted with the
-async runner:
+The expensive probe stage is submitted with the async runner:
 
 ```bash
 python3 scripts/submit_probes.py \
@@ -200,6 +198,12 @@ https://github.com/Zhekinmaksim/jastrow
 
 The intended host is Vercel. The project includes `vercel.json`; Vercel should
 install dependencies, run `npm run build`, and serve `dist`.
+
+Current deployment:
+
+```text
+https://jastrow.vercel.app
+```
 
 ## Known limits
 

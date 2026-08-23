@@ -12,3 +12,4 @@ __pycache__/
 runs/
 reel/node_modules/
 reel/out/
+.vercel

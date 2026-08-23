@@ -82,7 +82,7 @@ Jastrow uses GenLayer's own validator set as the instrument.
 ## Live evidence to include before final submit
 
 - Repository: https://github.com/Zhekinmaksim/jastrow
-- Vercel page: to be filled after deploy
+- Vercel page: https://jastrow.vercel.app
 - Contract address: to be filled after deploy
 - Report hash: to be filled after receipt report
 - Evidence root: to be filled after receipt report

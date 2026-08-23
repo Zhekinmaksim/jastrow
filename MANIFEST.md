@@ -16,6 +16,7 @@
 | --- | --- |
 | `cli/jastrow.py` | wrapper around the official `genlayer` CLI |
 | `scripts/submit_probes.py` | submits probes and records hashes immediately |
+| `scripts/register_battery.py` | registers the reference battery without probes |
 | `scripts/receipt_report.py` | builds a report from Explorer receipts and traces |
 | `scripts/check_report.py` | audits report math and receipt evidence |
 | `scripts/calibrate.py` | optional off-chain prompt calibration |

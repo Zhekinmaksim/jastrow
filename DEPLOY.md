@@ -32,18 +32,10 @@ genlayer call 0xYOUR_CONTRACT get_overview
 
 ## 2. Register the battery
 
-Register the spec and add the inputs from `calibration/battery.json`.
-
-You can use the CLI wrapper or run the commands manually. For a manual run,
-use:
+Register the spec and add the inputs from `calibration/battery.json`:
 
 ```bash
-python3 cli/jastrow.py --print new "Campaign rule v3" \
-  --question-file /tmp/jastrow-question.txt \
-  --vocab ACCEPT,REJECT \
-  --budget 100
-
-python3 cli/jastrow.py --print add 0 --label clean --payload "..."
+python3 scripts/register_battery.py calibration/battery.json --print
 ```
 
 After inputs are registered:
@@ -129,7 +121,7 @@ genlayer write 0xYOUR_CONTRACT commit_report \
 python3 scripts/embed_report.py web/report.json \
   --contract 0xYOUR_CONTRACT \
   --network "GenLayer Bradbury testnet" \
-  --site https://YOUR_VERCEL_URL
+  --site https://jastrow.vercel.app
 ```
 
 Then rebuild:
