@@ -19,6 +19,7 @@ let report = null;
 let readClient = null;
 let writeClient = null;
 let sdk = null;
+let walletProvider = null;
 
 async function ensureSdk() {
   if (sdk) return sdk;
@@ -58,6 +59,37 @@ function setStatus(message, detail) {
 
 function contractAddress() {
   return report?.provenance?.contract || report?.live_contract || "";
+}
+
+function injectedProvider() {
+  const eth = window.ethereum;
+  if (!eth) return null;
+  const providers = Array.isArray(eth.providers) ? eth.providers : [eth];
+  return (
+    providers.find((provider) => provider.isRabby) ||
+    providers.find((provider) => provider.isMetaMask) ||
+    providers[0]
+  );
+}
+
+function markWalletConnected(address) {
+  account = address || "";
+  if (!account) return;
+  els.connect.textContent = short(account);
+  els.connect.title = account;
+  els.connect.classList.add("is-connected");
+  els.submit.disabled = !contractAddress();
+  setStatus("Wallet connected", account);
+}
+
+function markWalletDisconnected(message = "Connect a wallet to submit a probe.") {
+  account = "";
+  writeClient = null;
+  els.connect.textContent = "Connect wallet";
+  els.connect.removeAttribute("title");
+  els.connect.classList.remove("is-connected");
+  els.submit.disabled = true;
+  setStatus("Wallet disconnected", message);
 }
 
 function populateInputs() {
@@ -125,28 +157,49 @@ function toggleInputMenu() {
 
 async function connectWallet() {
   const { createClient, testnetBradbury } = await ensureSdk();
-  if (!window.ethereum) {
+  walletProvider = injectedProvider();
+  if (!walletProvider) {
     setStatus("Wallet not found", "Install MetaMask or another injected wallet.");
     return;
   }
-  const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+  const accounts = await walletProvider.request({ method: "eth_requestAccounts" });
   account = accounts?.[0] || "";
   if (!account) {
     setStatus("Wallet locked", "No account was returned by the wallet.");
     return;
   }
+  markWalletConnected(account);
   writeClient = createClient({
     chain: testnetBradbury,
     account,
-    provider: window.ethereum,
+    provider: walletProvider,
   });
   if (!readClient) {
     readClient = createClient({ chain: testnetBradbury });
   }
-  await writeClient.connect("testnetBradbury");
-  els.connect.textContent = short(account);
-  els.submit.disabled = !contractAddress();
-  setStatus("Wallet connected", account);
+  try {
+    await writeClient.connect("testnetBradbury");
+  } catch (error) {
+    setStatus(
+      "Wallet connected",
+      "Account " + short(account) + ". Network handshake can finish when the transaction is submitted."
+    );
+  }
+}
+
+async function syncExistingWallet() {
+  const { createClient, testnetBradbury } = await ensureSdk();
+  walletProvider = injectedProvider();
+  if (!walletProvider) return;
+  const accounts = await walletProvider.request({ method: "eth_accounts" });
+  const current = accounts?.[0] || "";
+  if (!current) return;
+  markWalletConnected(current);
+  writeClient = createClient({
+    chain: testnetBradbury,
+    account: current,
+    provider: walletProvider,
+  });
 }
 
 async function fetchExplorer(hash) {
@@ -255,10 +308,23 @@ function boot() {
   ensureSdk()
     .then(({ createClient, testnetBradbury }) => {
       readClient = createClient({ chain: testnetBradbury });
+      return syncExistingWallet();
     })
     .catch(() => {
       setStatus("SDK load failed", "The static report still works; live calls need genlayer-js.");
     });
+  const provider = injectedProvider();
+  if (provider?.on) {
+    provider.on("accountsChanged", (accounts) => {
+      const next = accounts?.[0] || "";
+      if (next) {
+        markWalletConnected(next);
+        writeClient = null;
+      } else {
+        markWalletDisconnected();
+      }
+    });
+  }
 }
 
 boot();
