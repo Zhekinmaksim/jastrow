@@ -7,7 +7,7 @@ import {
   spring,
   useVideoConfig,
 } from "remotion";
-import { C, F, face, BEAT, BAR, bars, beats, dp } from "./theme";
+import { C, F, face, bars, beats, dp } from "./theme";
 import { Fade, Label, Line, Body, Plate, Scale, Mark } from "./parts";
 
 const PAD = 130;
@@ -57,8 +57,13 @@ export const Open: React.FC = () => {
       />
       <div style={{ position: "absolute", left: PAD, bottom: PAD }}>
         <Fade from={beats(4)}>
-          <div style={{ ...face(134, 800), fontSize: 88, textTransform: "uppercase", color: C.ink }}>
+          <div style={{ ...face(132, 650), fontSize: 88, textTransform: "uppercase", color: C.ink }}>
             Jastrow
+          </div>
+          <div style={{ marginTop: 22 }}>
+            <Body size={30} color={C.prose}>
+              One drawing, two readings. One spec, two validator verdicts.
+            </Body>
           </div>
         </Fade>
       </div>
@@ -67,18 +72,17 @@ export const Open: React.FC = () => {
 };
 
 /* --------------------------------------------------------------------------
-   2. The problem, bars 2 to 8. The ecosystem's own documented failure.
+   2. The problem, bars 2 to 8. The duck-rabbit is the product model.
    ----------------------------------------------------------------------- */
 
 export const Problem: React.FC = () => (
   <Stage>
     <AbsoluteFill style={{ padding: PAD, justifyContent: "center" }}>
       <Fade from={0} out={bars(3)}>
-        <Label>Asked at the community AMA</Label>
+        <Label>The Jastrow problem</Label>
         <div style={{ marginTop: 34 }}>
           <Line size={64} max={23}>
-            Why did Rally's AI jury reject submissions that followed the campaign
-            requirements?
+            The duck-rabbit is not a branding reference. It is the failure mode.
           </Line>
         </div>
       </Fade>
@@ -86,12 +90,12 @@ export const Problem: React.FC = () => (
     <AbsoluteFill style={{ padding: PAD, justifyContent: "center" }}>
       <Fade from={bars(3) + beats(1)}>
         <Line size={58} max={26}>
-          The answer named two causes. One of them was authors who did not
-          specify things properly.
+          One object can support two competent readings. A contract spec can do
+          the same thing.
         </Line>
         <div style={{ marginTop: 46 }}>
           <Fade from={bars(4) + beats(2)}>
-            <Body>The example given was a hashtag with a space in the middle.</Body>
+            <Body>Jastrow finds those duck-rabbit inputs before value depends on the rule.</Body>
           </Fade>
         </div>
       </Fade>
@@ -100,44 +104,38 @@ export const Problem: React.FC = () => (
 );
 
 /* --------------------------------------------------------------------------
-   3. The failing case, bars 8 to 11.
+   3. The contract check, bars 8 to 11.
    ----------------------------------------------------------------------- */
 
 export const Case: React.FC = () => {
-  const frame = useCurrentFrame();
-  const cut = interpolate(frame, [beats(3), beats(4.2)], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
   return (
     <Stage>
       <Fade from={0}>
-        <Label>The rule</Label>
+        <Label>Contract spec check</Label>
         <div style={{ marginTop: 30, fontFamily: F.data, fontSize: 42, color: C.prose, maxWidth: "42ch", lineHeight: 1.5 }}>
-          A submission qualifies if the post carries the hashtag{" "}
-          <span style={{ color: C.ink }}>#GenLayer</span>.
+          $ python3 cli/jastrow.py run report.json --threshold 0.25
         </div>
       </Fade>
       <div style={{ marginTop: 76 }}>
         <Fade from={beats(2)}>
-          <Label>The submission</Label>
+          <Label>The verdict</Label>
           <div
             style={{
               marginTop: 26,
               fontFamily: F.data,
               fontSize: 104,
-              color: C.ink,
-              letterSpacing: "-0.01em",
+              color: C.dial,
+              letterSpacing: "-0.03em",
             }}
           >
-            #<span style={{ opacity: cut, color: C.dial }}>&nbsp;</span>GenLayer
+            AMBIGUOUS
           </div>
         </Fade>
       </div>
       <Fade from={beats(6)} style={{ marginTop: 54 }}>
         <Line size={54} max={30}>
-          One space. Competent judges split on it, and nobody knew until the
-          appeals arrived.
+          Not a dashboard. A deploy gate with a non-zero exit code and concrete
+          inputs to rewrite.
         </Line>
       </Fade>
     </Stage>
@@ -173,15 +171,15 @@ export const Figure: React.FC = () => {
           <Label>Munich, 23 October 1892</Label>
           <div style={{ marginTop: 22 }}>
             <Line size={56} max={22}>
-              Which animals most resemble each other?
+              One drawing. Two valid readings.
             </Line>
           </div>
         </Fade>
         <Fade from={bars(2) + beats(2)} style={{ position: "absolute", top: 0, left: 0 }}>
-          <Label>The same drawing</Label>
+          <Label>GenLayer, before deploy</Label>
           <div style={{ marginTop: 22 }}>
             <Line size={56} max={20}>
-              The bill is a pair of ears.
+              One input. Two validator readings.
             </Line>
           </div>
         </Fade>
@@ -199,25 +197,24 @@ export const Figure: React.FC = () => {
 };
 
 /* --------------------------------------------------------------------------
-   5. What cannot be done, bars 16 to 19.
+   5. Why GenLayer, bars 16 to 19.
    ----------------------------------------------------------------------- */
 
 export const Limit: React.FC = () => (
   <Stage>
     <Fade from={0}>
       <Line size={72} max={22}>
-        A contract cannot watch its own validators disagree.
+        A single model cannot measure validator disagreement.
       </Line>
     </Fade>
     <Fade from={bars(1)} style={{ marginTop: 44 }}>
       <Body size={35}>
-        Disagreement surfaces as an appeal or a failed transaction, never as a
-        value the contract can read.
+        Jastrow uses GenLayer's own validator set as the instrument.
       </Body>
     </Fade>
     <Fade from={bars(2)} style={{ marginTop: 44 }}>
       <Line size={48} max={34} color={C.dial}>
-        So it is sampled instead. One probe, one transaction, one leader.
+        Same spec. Same input. Repeated consensus probes.
       </Line>
     </Fade>
   </Stage>
@@ -235,7 +232,7 @@ export const Probes: React.FC = () => {
   return (
     <Stage>
       <Fade from={0}>
-        <Label>Five probes on one input</Label>
+        <Label>Five probes on one contract input</Label>
       </Fade>
       <div style={{ display: "flex", gap: 46, marginTop: 62, alignItems: "center", height: 170 }}>
         {PROBE_KINDS.map((kind, i) => {
@@ -267,8 +264,8 @@ export const Probes: React.FC = () => {
       </div>
       <Fade from={beats(11)} style={{ marginTop: 60 }}>
         <Line size={56} max={30}>
-          Three said one thing. Two said the other. That spread is the
-          measurement.
+          Three readings one way. Two readings the other. That split is the
+          failing clause.
         </Line>
       </Fade>
     </Stage>
@@ -285,7 +282,7 @@ export const Reading: React.FC = () => {
   return (
     <Stage>
       <Fade from={0}>
-        <Label>Divergence on this input</Label>
+        <Label>Divergence on the duck-rabbit input</Label>
       </Fade>
       <div style={{ marginTop: 40 }}>
         <Scale k={5} tokens={2} value={480} width={1660} start={beats(1)} />
@@ -304,9 +301,8 @@ export const Reading: React.FC = () => {
       </div>
       <Fade from={bars(2)} style={{ marginTop: 30 }}>
         <Body size={34}>
-          At five answers over two options, only three values are reachable at
-          all. The reading sits on a detent, and the page says so rather than
-          implying a precision the sample does not have.
+          The CI gate fails on this input. The author does not need a better
+          average; they need to rewrite this clause.
         </Body>
       </Fade>
     </Stage>
@@ -318,18 +314,16 @@ export const Reading: React.FC = () => {
    ----------------------------------------------------------------------- */
 
 const ROWS = [
-  { label: "in-reply", k: 4, value: 500 },
-  { label: "spaced", k: 5, value: 480 },
-  { label: "cased", k: 5, value: 480 },
-  { label: "in-image", k: 4, value: 375 },
-  { label: "plural", k: 5, value: 320 },
+  { label: "in-image", k: 5, value: 480 },
+  { label: "in-reply", k: 5, value: 320 },
   { label: "clean", k: 5, value: 0 },
+  { label: "missing", k: 5, value: 0 },
 ];
 
 export const Report: React.FC = () => {
   const frame = useCurrentFrame();
   const mean = Math.round(
-    interpolate(frame - bars(2), [0, beats(3)], [0, 307], {
+    interpolate(frame - bars(2), [0, beats(3)], [0, 200], {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
     })
@@ -341,13 +335,13 @@ export const Report: React.FC = () => {
           <Label>Every input, worst first</Label>
           <div style={{ marginTop: 18 }}>
             <Body size={30}>
-              The worst input is the clause to rewrite. Now it has a name and a
-              number.
+              The output is the repair list. The top row is the first sentence
+              to rewrite.
             </Body>
           </div>
         </Fade>
         <Fade from={bars(2)} style={{ textAlign: "right" }}>
-          <Label style={{ textAlign: "right" }}>Mean divergence</Label>
+          <Label style={{ textAlign: "right" }}>Demo mean</Label>
           <div
             style={{
               fontFamily: F.data,
@@ -377,7 +371,7 @@ export const Report: React.FC = () => {
             }}
           >
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 20 }}>
-              <div style={{ ...face(92, 700), fontSize: 30, color: C.ink }}>{row.label}</div>
+              <div style={{ ...face(96, 590), fontSize: 30, color: C.ink }}>{row.label}</div>
               <div
                 style={{
                   fontFamily: F.data,
@@ -406,24 +400,24 @@ export const Report: React.FC = () => {
 };
 
 /* --------------------------------------------------------------------------
-   9. What it will not claim, bars 31 to 34.
+   9. What is live and what is guarded, bars 31 to 34.
    ----------------------------------------------------------------------- */
 
 export const Bound: React.FC = () => (
   <Stage>
     <Fade from={0}>
-      <Label>What it will not claim</Label>
+      <Label>Live proof layer</Label>
     </Fade>
     <Fade from={beats(1)} style={{ marginTop: 34 }}>
       <Line size={62} max={26}>
-        Every rate is an upper bound on the independence of the sample, not a
-        measurement of it.
+        The frontend calls the deployed GenLayer contract and returns a hash
+        immediately.
       </Line>
     </Fade>
     <Fade from={bars(1) + beats(2)} style={{ marginTop: 44 }}>
       <Body size={34}>
-        The runtime does not expose the leader identity, so the report says so in
-        its own body rather than in a footnote somebody can crop out.
+        The publishable report waits for terminal receipts. Until then, the page
+        labels demo evidence as demo evidence.
       </Body>
     </Fade>
   </Stage>
@@ -461,7 +455,7 @@ export const Card: React.FC = () => {
       />
       <div style={{ position: "absolute", left: PAD, top: "50%", transform: "translateY(-50%)" }}>
         <Fade from={0} length={beats(1.4)}>
-          <div style={{ ...face(134, 800), fontSize: 128, textTransform: "uppercase", color: C.ink }}>
+          <div style={{ ...face(132, 650), fontSize: 128, textTransform: "uppercase", color: C.ink }}>
             Jastrow
           </div>
         </Fade>
@@ -474,12 +468,13 @@ export const Card: React.FC = () => {
           }}
         />
         <Fade from={beats(3)}>
-          <div style={{ fontFamily: F.data, fontSize: 66, color: C.dial, letterSpacing: "0.01em" }}>
-            jastrow.quest
+          <div style={{ fontFamily: F.data, fontSize: 58, color: C.dial, letterSpacing: "0.01em" }}>
+            jastrow.vercel.app
           </div>
           <div style={{ marginTop: 26 }}>
             <Body size={33} color={C.muted}>
-              Measure the ambiguity before it ships, not after the appeals.
+              Check the spec before it ships. Find the duck-rabbit inputs before
+              users put value behind them.
             </Body>
           </div>
         </Fade>

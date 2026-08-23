@@ -1,5 +1,12 @@
 #!/bin/bash
-cd /home/claude/reel
-exec npx remotion render src/index.ts Reel out/jastrow-reel.mp4 \
-  --browser-executable=/opt/pw-browsers/chromium_headless_shell-1194/chrome-linux/headless_shell \
-  --codec=h264 --crf=18 --log=info
+set -euo pipefail
+
+cd "$(dirname "$0")"
+
+args=(src/index.ts Reel out/jastrow-reel.mp4 --codec=h264 --crf=18 --log=info)
+
+if [[ -n "${REMOTION_BROWSER_EXECUTABLE:-}" ]]; then
+  args+=(--browser-executable="$REMOTION_BROWSER_EXECUTABLE")
+fi
+
+exec npx remotion render "${args[@]}"

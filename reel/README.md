@@ -1,8 +1,9 @@
 # The reel
 
 Ninety seconds, 1920x1080, 30 fps. Built in Remotion against the same tokens,
-typefaces and engraving the report page uses, because a reel that looks like a
-different product is advertising a different product.
+typefaces and engraving the landing page uses. The story now matches the
+submission framing: duck-rabbit ambiguity, contract spec check, CI verdict, and
+live GenLayer proof layer.
 
 ```
 npm install
@@ -41,15 +42,15 @@ marks in scene six land one per beat rather than approximately on the beat.
 | bars | seconds | scene |
 | --- | --- | --- |
 | 0 to 2 | 0.0 to 5.1 | the figure arrives before any claim does |
-| 2 to 8 | 5.1 to 20.2 | the question from the AMA, and the answer |
-| 8 to 11 | 20.2 to 27.8 | the failing case, one space inside a hashtag |
-| 11 to 16 | 27.8 to 40.4 | the drawing turns, and the bill becomes ears |
-| 16 to 19 | 40.4 to 48.0 | what a contract cannot do |
+| 2 to 8 | 5.1 to 20.2 | the duck-rabbit is the failure mode |
+| 8 to 11 | 20.2 to 27.8 | contract spec check and AMBIGUOUS verdict |
+| 11 to 16 | 27.8 to 40.4 | one drawing / two readings becomes one input / two validator readings |
+| 16 to 19 | 40.4 to 48.0 | why GenLayer is the instrument |
 | 19 to 23 | 48.0 to 58.1 | five probes, one per beat |
-| 23 to 27 | 58.1 to 68.2 | the needle settles onto a detent |
+| 23 to 27 | 58.1 to 68.2 | the failing input settles onto a detent |
 | 27 to 31 | 68.2 to 78.3 | every input, worst first |
-| 31 to 34 | 78.3 to 85.9 | the bound it will not exceed |
-| 34 to 36 | 85.9 to 90.9 | jastrow.quest |
+| 31 to 34 | 78.3 to 85.9 | live proof layer and receipt caveat |
+| 34 to 36 | 85.9 to 90.9 | jastrow.vercel.app |
 
 ## The scale is the same arithmetic
 
@@ -64,11 +65,10 @@ chart recorder does not bounce.
 
 ## Numbers on screen
 
-The readings shown are the fixture in `web/report.json`, which is invented and
-labelled as invented everywhere else in this repository. **Before publishing
-the reel, re-render it against a real report**, or the reel is making a claim
-the project refuses to make on its own page. The rows live in `ROWS` in
-`src/scenes.tsx` and the mean in the `Report` scene.
+The readings shown are the same small demo gate used on the landing page:
+`in-image=0.480`, `in-reply=0.320`, `clean=0`, `missing=0`. It is a demo of the
+CI verdict flow, not a receipt-backed Bradbury measurement. The script says the
+publishable report waits for terminal receipts, matching the page.
 
 ## What is in out/
 

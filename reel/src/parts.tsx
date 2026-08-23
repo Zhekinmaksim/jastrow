@@ -46,7 +46,7 @@ export const Label: React.FC<{ children: React.ReactNode; style?: React.CSSPrope
 }) => (
   <div
     style={{
-      ...face(76, 600),
+      ...face(78, 520),
       fontSize: 26,
       letterSpacing: "0.2em",
       textTransform: "uppercase",
