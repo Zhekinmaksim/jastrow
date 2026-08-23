@@ -4,6 +4,8 @@ const MAX_POLLS = 90;
 
 const els = {
   input: document.getElementById("live-input"),
+  inputButton: document.getElementById("live-input-button"),
+  inputMenu: document.getElementById("live-input-menu"),
   connect: document.getElementById("live-connect"),
   submit: document.getElementById("live-submit"),
   status: document.getElementById("live-status"),
@@ -60,16 +62,65 @@ function contractAddress() {
 
 function populateInputs() {
   els.input.textContent = "";
+  els.inputMenu.textContent = "";
   const rows = report?.rows || [];
   rows
     .slice()
     .sort((a, b) => a.input_id - b.input_id)
     .forEach((row) => {
+      const value = String(row.input_id);
+      const label = row.label + " (input " + row.input_id + ")";
       const option = document.createElement("option");
-      option.value = String(row.input_id);
-      option.textContent = row.label + " (input " + row.input_id + ")";
+      option.value = value;
+      option.textContent = label;
       els.input.appendChild(option);
+
+      const item = document.createElement("button");
+      item.type = "button";
+      item.className = "picker-option";
+      item.setAttribute("role", "option");
+      item.setAttribute("aria-selected", "false");
+      item.dataset.value = value;
+
+      const name = document.createElement("span");
+      name.textContent = row.label;
+      const id = document.createElement("span");
+      id.className = "option-id";
+      id.textContent = "input " + row.input_id;
+      item.append(name, id);
+      item.addEventListener("click", () => selectInput(value));
+      els.inputMenu.appendChild(item);
     });
+  if (els.input.options.length) {
+    selectInput(els.input.options[0].value, false);
+  }
+}
+
+function selectInput(value, close = true) {
+  els.input.value = String(value);
+  const selected = els.input.options[els.input.selectedIndex];
+  els.inputButton.textContent = selected ? selected.textContent : "Select input";
+  [...els.inputMenu.querySelectorAll(".picker-option")].forEach((item) => {
+    item.setAttribute("aria-selected", item.dataset.value === String(value) ? "true" : "false");
+  });
+  if (close) closeInputMenu();
+}
+
+function openInputMenu() {
+  els.inputMenu.hidden = false;
+  els.inputButton.setAttribute("aria-expanded", "true");
+  const selected = els.inputMenu.querySelector('[aria-selected="true"]');
+  if (selected) selected.scrollIntoView({ block: "nearest" });
+}
+
+function closeInputMenu() {
+  els.inputMenu.hidden = true;
+  els.inputButton.setAttribute("aria-expanded", "false");
+}
+
+function toggleInputMenu() {
+  if (els.inputMenu.hidden) openInputMenu();
+  else closeInputMenu();
 }
 
 async function connectWallet() {
@@ -187,6 +238,20 @@ function boot() {
   }
   els.connect.addEventListener("click", connectWallet);
   els.submit.addEventListener("click", runProbe);
+  els.inputButton.addEventListener("click", toggleInputMenu);
+  els.inputButton.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeInputMenu();
+      return;
+    }
+    if (event.key === "ArrowDown" || event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      openInputMenu();
+    }
+  });
+  document.addEventListener("click", (event) => {
+    if (!event.target.closest("#live-picker")) closeInputMenu();
+  });
   ensureSdk()
     .then(({ createClient, testnetBradbury }) => {
       readClient = createClient({ chain: testnetBradbury });

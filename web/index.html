@@ -396,15 +396,93 @@ p { text-wrap: pretty; }
   font-size: 12px;
   color: var(--muted);
 }
-.field select {
+.native-select {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 1px;
+  height: 1px;
+}
+.live-picker {
+  position: relative;
+}
+.picker-button {
   width: 100%;
   min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
   color: var(--ink);
   background: var(--milled);
   border: 1px solid var(--edge);
   border-radius: 0;
   padding: 0 12px;
   font: 14px var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+.picker-button:hover,
+.picker-button[aria-expanded="true"] {
+  border-color: var(--dial);
+}
+.picker-button:focus-visible {
+  outline: 2px solid var(--dial);
+  outline-offset: 3px;
+}
+.picker-button::after {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-right: 1px solid var(--muted);
+  border-bottom: 1px solid var(--muted);
+  transform: rotate(45deg) translateY(-2px);
+  flex: none;
+}
+.picker-button[aria-expanded="true"]::after {
+  transform: rotate(225deg) translateY(-2px);
+  border-color: var(--dial);
+}
+.picker-menu {
+  position: absolute;
+  z-index: 20;
+  left: 0;
+  right: 0;
+  top: calc(100% + 6px);
+  max-height: 278px;
+  overflow: auto;
+  background: #0b0d0f;
+  border: 1px solid var(--dial);
+  box-shadow: 0 20px 46px rgba(0, 0, 0, .48);
+  padding: 6px;
+}
+.picker-menu[hidden] {
+  display: none;
+}
+.picker-option {
+  width: 100%;
+  min-height: 38px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  border: 0;
+  background: transparent;
+  color: var(--prose);
+  font: 13px var(--text);
+  text-align: left;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+.picker-option:hover,
+.picker-option[aria-selected="true"] {
+  background: var(--face);
+  color: var(--ink);
+}
+.picker-option .option-id {
+  font-family: var(--data);
+  font-size: 11px;
+  color: var(--muted);
 }
 .live-button {
   min-height: 42px;
@@ -951,7 +1029,20 @@ details .after { margin: 0; padding: 0 20px 20px; color: var(--muted); font-size
       <div class="live-form">
         <div class="field">
           <label for="live-input">Input</label>
-          <select id="live-input"></select>
+          <div class="live-picker" id="live-picker">
+            <button
+              class="picker-button"
+              type="button"
+              id="live-input-button"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+              aria-controls="live-input-menu"
+            >
+              Select input
+            </button>
+            <div class="picker-menu" id="live-input-menu" role="listbox" hidden></div>
+            <select class="native-select" id="live-input" tabindex="-1" aria-hidden="true"></select>
+          </div>
         </div>
         <button class="live-button secondary" type="button" id="live-connect">Connect wallet</button>
         <button class="live-button" type="button" id="live-submit" disabled>Run probe</button>
