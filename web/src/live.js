@@ -262,7 +262,7 @@ async function runProbe() {
     });
     els.tx.innerHTML = "";
     const link = document.createElement("a");
-    link.href = EXPLORER + "/transactions/" + hash;
+    link.href = EXPLORER + "/tx/" + hash;
     link.rel = "noreferrer";
     link.target = "_blank";
     link.textContent = short(hash);
