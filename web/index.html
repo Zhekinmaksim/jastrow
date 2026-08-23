@@ -519,6 +519,30 @@ p { text-wrap: pretty; }
 .live-side dl { margin: 0; display: grid; gap: 10px; }
 .live-side dt { font-family: var(--data); font-size: 12px; color: var(--muted); }
 .live-side dd { margin: 2px 0 0; font-family: var(--data); font-size: 12px; word-break: break-word; }
+.wallet-proof {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  margin-top: 12px;
+}
+.wallet-proof input {
+  min-width: 0;
+  min-height: 36px;
+  background: var(--milled);
+  border: 1px solid var(--edge);
+  color: var(--ink);
+  padding: 0 10px;
+  font: 12px var(--data);
+}
+.wallet-proof input:focus-visible {
+  outline: 2px solid var(--dial);
+  outline-offset: 3px;
+}
+.wallet-proof .live-button {
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 12px;
+}
 
 /* ---------- contract check demo ---------- */
 
@@ -1060,14 +1084,22 @@ details .after { margin: 0; padding: 0 20px 20px; color: var(--muted); font-size
           <dd id="live-contract">not set</dd>
         </div>
         <div>
-          <dt>Last tx</dt>
+          <dt>GenLayer tx</dt>
           <dd id="live-tx">none</dd>
+        </div>
+        <div>
+          <dt>Wallet tx</dt>
+          <dd id="live-wallet-tx">none</dd>
         </div>
         <div>
           <dt>Lifecycle</dt>
           <dd id="live-life">idle</dd>
         </div>
       </dl>
+      <div class="wallet-proof">
+        <input id="wallet-tx-input" inputmode="text" spellcheck="false" placeholder="Paste wallet tx hash">
+        <button class="live-button secondary" type="button" id="wallet-tx-save">Show</button>
+      </div>
     </div>
   </section>
 

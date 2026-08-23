@@ -1,6 +1,8 @@
-const EXPLORER = "https://explorer-bradbury.genlayer.com";
+const GENLAYER_EXPLORER = "https://explorer-bradbury.genlayer.com";
+const WALLET_EXPLORER = "https://zksync-os-testnet-genlayer.explorer.zksync.dev";
 const POLL_MS = 10000;
 const MAX_POLLS = 90;
+const TX_RE = /0x[a-fA-F0-9]{64}/;
 
 const els = {
   input: document.getElementById("live-input"),
@@ -11,6 +13,9 @@ const els = {
   status: document.getElementById("live-status"),
   contract: document.getElementById("live-contract"),
   tx: document.getElementById("live-tx"),
+  walletTx: document.getElementById("live-wallet-tx"),
+  walletTxInput: document.getElementById("wallet-tx-input"),
+  walletTxSave: document.getElementById("wallet-tx-save"),
   life: document.getElementById("live-life"),
 };
 
@@ -57,6 +62,40 @@ function setStatus(message, detail) {
   }
 }
 
+function hashFromText(value) {
+  const match = String(value || "").match(TX_RE);
+  return match ? match[0] : "";
+}
+
+function setTxLink(node, baseUrl, hash) {
+  const cleanHash = hashFromText(hash);
+  node.innerHTML = "";
+  if (!cleanHash) {
+    node.textContent = "none";
+    return "";
+  }
+  const link = document.createElement("a");
+  link.href = baseUrl.replace(/\/$/, "") + "/tx/" + cleanHash;
+  link.rel = "noreferrer";
+  link.target = "_blank";
+  link.textContent = short(cleanHash);
+  node.appendChild(link);
+  return cleanHash;
+}
+
+function setGenlayerTx(hash) {
+  return setTxLink(els.tx, GENLAYER_EXPLORER, hash);
+}
+
+function setWalletTx(hash) {
+  const cleanHash = setTxLink(els.walletTx, WALLET_EXPLORER, hash);
+  if (cleanHash) {
+    localStorage.setItem("jastrow:last-wallet-tx", cleanHash);
+    if (els.walletTxInput) els.walletTxInput.value = cleanHash;
+  }
+  return cleanHash;
+}
+
 function contractAddress() {
   return report?.provenance?.contract || report?.live_contract || "";
 }
@@ -70,6 +109,24 @@ function injectedProvider() {
     providers.find((provider) => provider.isMetaMask) ||
     providers[0]
   );
+}
+
+function providerWithWalletTxCapture(provider) {
+  if (!provider || provider.__jastrowWalletCapture) return provider;
+  const wrapped = Object.create(provider);
+  Object.defineProperty(wrapped, "__jastrowWalletCapture", { value: true });
+  wrapped.request = async (args) => {
+    const result = await provider.request(args);
+    if (args?.method === "eth_sendTransaction") {
+      const walletHash = hashFromText(result);
+      if (walletHash) {
+        setWalletTx(walletHash);
+        setStatus("Wallet transaction sent", walletHash);
+      }
+    }
+    return result;
+  };
+  return wrapped;
 }
 
 function markWalletConnected(address) {
@@ -172,7 +229,7 @@ async function connectWallet() {
   writeClient = createClient({
     chain: testnetBradbury,
     account,
-    provider: walletProvider,
+    provider: providerWithWalletTxCapture(walletProvider),
   });
   if (!readClient) {
     readClient = createClient({ chain: testnetBradbury });
@@ -198,12 +255,12 @@ async function syncExistingWallet() {
   writeClient = createClient({
     chain: testnetBradbury,
     account: current,
-    provider: walletProvider,
+    provider: providerWithWalletTxCapture(walletProvider),
   });
 }
 
 async function fetchExplorer(hash) {
-  const response = await fetch(EXPLORER + "/api/v1/transactions/" + hash, {
+  const response = await fetch(GENLAYER_EXPLORER + "/api/v1/transactions/" + hash, {
     headers: { accept: "application/json" },
   });
   if (!response.ok) throw new Error("Explorer returned " + response.status);
@@ -260,13 +317,7 @@ async function runProbe() {
       args: [Number(report.spec_id), inputId],
       value: 0n,
     });
-    els.tx.innerHTML = "";
-    const link = document.createElement("a");
-    link.href = EXPLORER + "/tx/" + hash;
-    link.rel = "noreferrer";
-    link.target = "_blank";
-    link.textContent = short(hash);
-    els.tx.appendChild(link);
+    setGenlayerTx(hash);
     els.life.textContent = "submitted";
     setStatus("Transaction submitted", hash);
     await poll(hash);
@@ -291,6 +342,16 @@ function boot() {
   }
   els.connect.addEventListener("click", connectWallet);
   els.submit.addEventListener("click", runProbe);
+  els.walletTxSave.addEventListener("click", () => {
+    const walletHash = setWalletTx(els.walletTxInput.value);
+    if (walletHash) {
+      setStatus("Wallet transaction linked", walletHash);
+    } else {
+      setStatus("No wallet tx found", "Paste a 0x transaction hash or a full explorer URL.");
+    }
+  });
+  const savedWalletTx = localStorage.getItem("jastrow:last-wallet-tx");
+  if (savedWalletTx) setWalletTx(savedWalletTx);
   els.inputButton.addEventListener("click", toggleInputMenu);
   els.inputButton.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
