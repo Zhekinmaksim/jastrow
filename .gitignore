@@ -1,0 +1,14 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+.vercel/
+dist/
+node_modules/
+__pycache__/
+*.pyc
+*.zip
+.jastrow.json
+runs/
+reel/node_modules/
+reel/out/

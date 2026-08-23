@@ -1,0 +1,5 @@
+node_modules/
+render.log
+# The rendered film and its poster are committed on purpose: they are the
+# deliverable, and 11 MB is cheaper than asking a reviewer to install Remotion
+# and wait twenty minutes to see what the project looks like.

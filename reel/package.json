@@ -1,0 +1,28 @@
+{
+  "name": "jastrow-reel",
+  "version": "1.0.0",
+  "description": "Ninety second reel for the Jastrow divergence report",
+  "main": "index.js",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "render": "remotion render src/index.ts Reel out/jastrow-reel.mp4 --codec=h264 --crf=18",
+    "cut-audio": "bash scripts/cut-audio.sh"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@remotion/bundler": "^4.0.513",
+    "@remotion/cli": "^4.0.513",
+    "@remotion/renderer": "^4.0.513",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "remotion": "^4.0.513"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "typescript": "^7.0.2"
+  },
+  "private": true
+}

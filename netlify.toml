@@ -1,0 +1,5 @@
+# The site is one HTML file, an engraving and six font files. There is no build
+# step, so there is no build command. Headers live in web/_headers.
+
+[build]
+  publish = "web"

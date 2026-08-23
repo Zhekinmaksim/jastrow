@@ -1,0 +1,27 @@
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), interest-cohort=()
+  # 'unsafe-inline' because the page is deliberately one file: the script and
+  # the styles are inline, and the embedded report block changes on every
+  # publish, so a hash based policy would break on each new measurement.
+  # Everything else is locked to 'none' or 'self', so nothing on this page can
+  # reach a third party.
+  Content-Security-Policy: default-src 'none'; img-src 'self'; font-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+
+# The fonts and the engraving are content addressed by nothing, so they are not
+# immutable, but they change roughly never. A day of caching is honest.
+/assets/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/*
+  Cache-Control: public, max-age=86400
+
+# The page carries the report inside it, so it must not be cached hard or a
+# reader will be looking at last week's measurement.
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/report.json
+  Cache-Control: public, max-age=0, must-revalidate

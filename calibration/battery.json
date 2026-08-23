@@ -1,0 +1,51 @@
+{
+  "name": "rally-hashtag-v1",
+  "note": "The ecosystem's own documented failure. At the community AMA the CEO named two causes for Rally's inconsistent AI jury: something underspecified in the Intelligent Contract, and campaign authors who did not specify things properly, the example given being a hashtag with a space in the middle. The spaced input below is that example. The first two inputs should measure near zero; several of the rest should not.",
+  "title": "Campaign rule v3",
+  "question": "A submission qualifies for the campaign if the post carries the hashtag #GenLayer and includes a link to the project. Judge the submission described below against that rule and answer ACCEPT if it qualifies or REJECT if it does not.",
+  "vocabulary": "ACCEPT,REJECT",
+  "probe_budget": 100,
+  "k": 5,
+  "inputs": [
+    {
+      "label": "clean",
+      "payload": "A post reading: Just tried the testnet, genuinely fast. #GenLayer https://genlayer.com",
+      "expectation": "low divergence, this is the case the rule was written for"
+    },
+    {
+      "label": "missing",
+      "payload": "A post reading: Just tried the testnet, genuinely fast. https://genlayer.com",
+      "expectation": "low divergence, the hashtag is plainly absent"
+    },
+    {
+      "label": "spaced",
+      "payload": "A post reading: Just tried the testnet, genuinely fast. # GenLayer https://genlayer.com",
+      "expectation": "the AMA's own example, a hashtag with a space in the middle"
+    },
+    {
+      "label": "cased",
+      "payload": "A post reading: Just tried the testnet, genuinely fast. #genlayer https://genlayer.com",
+      "expectation": "the rule says nothing about case"
+    },
+    {
+      "label": "in-image",
+      "payload": "A post reading: Just tried the testnet, genuinely fast. https://genlayer.com The hashtag #GenLayer appears only inside the attached screenshot, not in the post text.",
+      "expectation": "the rule says carries, and does not say where"
+    },
+    {
+      "label": "in-reply",
+      "payload": "A post reading: Just tried the testnet, genuinely fast. https://genlayer.com The author then replied to their own post with: #GenLayer",
+      "expectation": "does a thread count as the post"
+    },
+    {
+      "label": "plural",
+      "payload": "A post reading: Just tried the testnet, genuinely fast. #GenLayerBuilders https://genlayer.com",
+      "expectation": "the required string is a prefix of the string present"
+    },
+    {
+      "label": "quoted",
+      "payload": "A post reading: this is worth reading, with a link to https://genlayer.com, quote tweeting another account's post which itself carries #GenLayer",
+      "expectation": "whose post is being judged"
+    }
+  ]
+}
