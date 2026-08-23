@@ -107,6 +107,7 @@ def _submit_once(args, input_id: int, label: str, round_index: int) -> dict:
         combined = ""
         deadline = time.time() + args.hash_timeout
         tx_hash = ""
+        hash_marker_seen = False
         while time.time() < deadline:
             assert proc.stdout is not None
             ready, _, _ = select.select([proc.stdout], [], [], 0.25)
@@ -123,7 +124,9 @@ def _submit_once(args, input_id: int, label: str, round_index: int) -> dict:
                     break
                 continue
             combined += line
-            match = TX_RE.search(line) if "Transaction Hash" in line else None
+            if "Transaction Hash" in line:
+                hash_marker_seen = True
+            match = TX_RE.search(line) if hash_marker_seen else None
             if match:
                 tx_hash = match.group(0)
                 break
