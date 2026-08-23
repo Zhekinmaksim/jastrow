@@ -275,11 +275,13 @@ def main() -> int:
         tx_hash = row["tx_hash"]
         try:
             receipt = _receipt(args.explorer, tx_hash, args.timeout)
-        except (urllib.error.URLError, TimeoutError) as exc:
+        except Exception as exc:
             receipt = {"fetch_error": str(exc)}
         trace_text = ""
         trace_error = ""
-        if not receipt.get("fetch_error"):
+        status = _status(receipt) if not receipt.get("fetch_error") else "FETCH_ERROR"
+        terminal = status in ("ACCEPTED", "FINALIZED", "UNDETERMINED", "SUCCESS")
+        if terminal:
             try:
                 trace_text = _trace(tx_hash, args.rpc, args.timeout)
             except (subprocess.SubprocessError, TimeoutError) as exc:
@@ -291,16 +293,16 @@ def main() -> int:
             "input_id": int(row["input_id"]),
             "label": str(row["label"]),
             "round": int(row.get("round", 0)),
-            "status": _status(receipt) if not receipt.get("fetch_error") else "FETCH_ERROR",
+            "status": status,
             "execution_result": str(receipt.get("execution_result") or receipt.get("txExecutionResultName") or ""),
             "leader": _leader(receipt),
             "validator_set_size": _validator_count(receipt),
             "chain_total_cost": _chain_cost(receipt),
             "observation": observation,
-            "parse_error": parse_error or trace_error,
+            "parse_error": parse_error or trace_error or ("" if terminal else "transaction not terminal"),
         }
         evidence.append(item)
-        print(str(index) + "/" + str(len(manifest)) + " " + tx_hash + " " + item["status"])
+        print(str(index) + "/" + str(len(manifest)) + " " + tx_hash + " " + item["status"], flush=True)
 
     report = _build_report(args, manifest, evidence)
     out = pathlib.Path(args.out)

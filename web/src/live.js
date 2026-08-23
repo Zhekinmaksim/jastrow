@@ -55,7 +55,7 @@ function setStatus(message, detail) {
 }
 
 function contractAddress() {
-  return report?.provenance?.contract || "";
+  return report?.provenance?.contract || report?.live_contract || "";
 }
 
 function populateInputs() {

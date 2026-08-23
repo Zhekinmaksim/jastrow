@@ -31,6 +31,8 @@ def main() -> int:
     parser.add_argument("--address")
     parser.add_argument("--rpc")
     parser.add_argument("--account")
+    parser.add_argument("--spec", type=int, help="existing spec id when using --skip-register")
+    parser.add_argument("--skip-register", action="store_true")
     parser.add_argument("--print", dest="print_cmd", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
@@ -40,24 +42,42 @@ def main() -> int:
     if args.account:
         cli.apply_account(base)
 
-    result = cli.write(
-        base,
-        "register_spec",
-        battery["title"],
-        battery["question"],
-        battery["vocabulary"],
-        battery.get("probe_budget", 100),
-    )
-    spec_id = result if isinstance(result, int) else None
-    if spec_id is None and isinstance(result, dict):
-        spec_id = result.get("spec_id")
-    if spec_id is None:
-        spec_id = 0 if args.dry_run else None
-    if spec_id is None:
-        raise SystemExit("could not read spec id from register_spec result")
+    if args.skip_register:
+        if args.spec is None:
+            raise SystemExit("pass --spec with --skip-register")
+        spec_id = args.spec
+    else:
+        result = cli.write(
+            base,
+            "register_spec",
+            battery["title"],
+            battery["question"],
+            battery["vocabulary"],
+            battery.get("probe_budget", 100),
+        )
+        spec_id = result if isinstance(result, int) else None
+        if spec_id is None and isinstance(result, dict):
+            spec_id = result.get("spec_id")
+        if spec_id is None and isinstance(result, str) and result.strip().isdigit():
+            spec_id = int(result.strip())
+        if spec_id is None:
+            spec_id = 0 if args.dry_run else None
+        if spec_id is None:
+            raise SystemExit("could not read spec id from register_spec result")
 
     print("spec " + str(spec_id))
+    existing = set()
+    if not args.dry_run:
+        found = cli.call(base, "get_inputs", spec_id, 0, 100)
+        if isinstance(found, dict):
+            for row in found.get("items", []):
+                label = row.get("label")
+                if isinstance(label, str):
+                    existing.add(label)
     for item in battery["inputs"]:
+        if item["label"] in existing:
+            print("skip " + item["label"])
+            continue
         print("input " + item["label"])
         cli.write(base, "add_input", spec_id, item["label"], item["payload"])
     return 0

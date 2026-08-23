@@ -27,6 +27,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("report", help="path to a report json")
     parser.add_argument("--contract", help="deployed contract address")
+    parser.add_argument("--live-contract", help="contract address used by the live frontend panel")
     parser.add_argument("--network", default="GenLayer Bradbury testnet")
     parser.add_argument(
         "--site",
@@ -50,6 +51,8 @@ def main() -> int:
         provenance["network"] = args.network
         provenance["taken_at"] = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
         report["provenance"] = provenance
+    if args.live_contract:
+        report["live_contract"] = args.live_contract
 
     page_path = pathlib.Path(args.page)
     page = page_path.read_text()

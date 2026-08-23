@@ -28,10 +28,11 @@ import jastrow as cli  # noqa: E402
 TX_RE = re.compile(r"0x[0-9a-fA-F]{64}")
 
 
-def _load_manifest(path: pathlib.Path) -> set[str]:
-    seen: set[str] = set()
+def _load_manifest(path: pathlib.Path) -> tuple[set[str], set[tuple[str, int]]]:
+    seen_hashes: set[str] = set()
+    seen_slots: set[tuple[str, int]] = set()
     if not path.exists():
-        return seen
+        return seen_hashes, seen_slots
     for line in path.read_text().splitlines():
         if not line.strip():
             continue
@@ -41,8 +42,12 @@ def _load_manifest(path: pathlib.Path) -> set[str]:
             continue
         tx_hash = row.get("tx_hash")
         if isinstance(tx_hash, str):
-            seen.add(tx_hash.lower())
-    return seen
+            seen_hashes.add(tx_hash.lower())
+        label = row.get("label")
+        round_index = row.get("round")
+        if isinstance(label, str) and isinstance(round_index, int):
+            seen_slots.add((label, round_index))
+    return seen_hashes, seen_slots
 
 
 def _append_jsonl(path: pathlib.Path, row: dict) -> None:
@@ -87,52 +92,63 @@ def _submit_once(args, input_id: int, label: str, round_index: int) -> dict:
         command += ["--rpc", args.rpc]
 
     env = os.environ.copy()
-    proc = subprocess.Popen(
-        command,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        bufsize=1,
-        env=env,
-    )
+    last_output = ""
+    for attempt in range(1, args.attempts + 1):
+        proc = subprocess.Popen(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1,
+            env=env,
+        )
 
-    combined = ""
-    deadline = time.time() + args.hash_timeout
-    tx_hash = ""
-    while time.time() < deadline:
-        assert proc.stdout is not None
-        line = proc.stdout.readline()
-        if not line:
-            if proc.poll() is not None:
+        combined = ""
+        deadline = time.time() + args.hash_timeout
+        tx_hash = ""
+        while time.time() < deadline:
+            assert proc.stdout is not None
+            line = proc.stdout.readline()
+            if not line:
+                if proc.poll() is not None:
+                    break
+                time.sleep(0.1)
+                continue
+            combined += line
+            match = TX_RE.search(line) if "Transaction Hash" in line else None
+            if match:
+                tx_hash = match.group(0)
                 break
-            time.sleep(0.1)
-            continue
-        combined += line
-        match = TX_RE.search(line)
-        if match:
-            tx_hash = match.group(0)
-            break
 
-    if tx_hash:
-        proc.terminate()
+        if tx_hash:
+            proc.terminate()
+            try:
+                proc.wait(timeout=3)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+            return {
+                "tx_hash": tx_hash,
+                "spec_id": int(args.spec),
+                "input_id": int(input_id),
+                "label": label,
+                "round": int(round_index),
+                "submitted_at_unix": int(time.time()),
+            }
+
         try:
             proc.wait(timeout=3)
         except subprocess.TimeoutExpired:
             proc.kill()
-        return {
-            "tx_hash": tx_hash,
-            "spec_id": int(args.spec),
-            "input_id": int(input_id),
-            "label": label,
-            "round": int(round_index),
-            "submitted_at_unix": int(time.time()),
-        }
+        last_output = combined
+        if "-32005" not in combined and "node is at capacity" not in combined:
+            break
+        match = re.search(r"retry in ~?(\d+)ms", combined)
+        suggested = (int(match.group(1)) / 1000.0) if match else 1.0
+        delay = max(suggested + 0.25, min(20.0, 0.75 * (2 ** (attempt - 1))))
+        print("capacity on " + label + ", retry " + str(attempt) + "/" + str(args.attempts) + " in " + "{:.2f}".format(delay) + "s")
+        time.sleep(delay)
 
-    try:
-        proc.wait(timeout=3)
-    except subprocess.TimeoutExpired:
-        proc.kill()
-    raise RuntimeError("no tx hash printed for input " + label + ":\n" + combined[-2000:])
+    raise RuntimeError("no tx hash printed for input " + label + ":\n" + last_output[-2000:])
 
 
 def main() -> int:
@@ -146,6 +162,7 @@ def main() -> int:
     parser.add_argument("--manifest", default="runs/probes.jsonl")
     parser.add_argument("--delay", type=float, default=0.0)
     parser.add_argument("--hash-timeout", type=float, default=90.0)
+    parser.add_argument("--attempts", type=int, default=8)
     args = parser.parse_args()
 
     if not args.address:
@@ -156,7 +173,7 @@ def main() -> int:
         cli.apply_account(_dummy_args(args))
 
     manifest = pathlib.Path(args.manifest)
-    seen = _load_manifest(manifest)
+    seen_hashes, seen_slots = _load_manifest(manifest)
     inputs = _fetch_inputs(args)
     total = len(inputs) * args.k
     print("submitting " + str(total) + " probes; hashes go to " + str(manifest))
@@ -164,11 +181,15 @@ def main() -> int:
     done = 0
     for round_index in range(1, args.k + 1):
         for item in inputs:
+            if (str(item["label"]), round_index) in seen_slots:
+                print("skip " + str(item["label"]) + " r" + str(round_index))
+                continue
             done += 1
             row = _submit_once(args, int(item["input_id"]), str(item["label"]), round_index)
-            if row["tx_hash"].lower() not in seen:
+            if row["tx_hash"].lower() not in seen_hashes:
                 _append_jsonl(manifest, row)
-                seen.add(row["tx_hash"].lower())
+                seen_hashes.add(row["tx_hash"].lower())
+                seen_slots.add((row["label"], row["round"]))
             print(
                 str(done)
                 + "/"
