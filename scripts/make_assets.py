@@ -105,14 +105,14 @@ CARD_HTML = """<!DOCTYPE html>
 <img class="plate" src="assets/jastrow-1899.webp" alt="">
 <div class="pad">
   <div class="mark">Jastrow</div>
-  <div class="face" style="margin-top:12px">Divergence report &middot; GenLayer</div>
+  <div class="face" style="margin-top:12px">Spec decidability gate &middot; GenLayer</div>
   <div class="rule"></div>
   <div class="reading">
     <div>
       <div class="face">Mean divergence</div>
       <div class="value">{mean}</div>
     </div>
-    <div class="lede">How often independent validators part company on the same specification.</div>
+    <div class="lede">Find the inputs that make validators split before the spec ships.</div>
   </div>
   <div class="foot">
     <span>measured before it ships</span>

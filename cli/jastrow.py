@@ -11,6 +11,7 @@ published measurement can see precisely what was sent.
     jastrow add 0 --label spaced --payload-file cases/spaced.txt
     jastrow probe 0 --k 5
     jastrow report 0 --worst 5
+    jastrow run web/report.json --threshold 0.25
     jastrow battery ../calibration/battery.json --k 5
 
 State lives in .jastrow.json next to the working directory, so the contract
@@ -31,6 +32,7 @@ import time
 
 STATE_FILE = pathlib.Path(os.environ.get("JASTROW_STATE", ".jastrow.json"))
 CONTRACT_PATH = pathlib.Path(__file__).resolve().parents[1] / "contracts" / "jastrow.py"
+GATE_PATH = pathlib.Path(__file__).resolve().parents[1] / "scripts" / "jastrow_gate.py"
 
 RESERVED = ("UNSETTLED", "OUT_OF_VOCAB", "MALFORMED")
 
@@ -422,6 +424,27 @@ def cmd_canonical(args) -> None:
     print(call(args, "get_canonical_spec", args.spec))
 
 
+def cmd_run(args) -> None:
+    command = [
+        sys.executable,
+        str(GATE_PATH),
+        args.report,
+        "--threshold",
+        str(args.threshold),
+        "--malformed-threshold",
+        str(args.malformed_threshold),
+    ]
+    if args.allow_fixture:
+        command.append("--allow-fixture")
+    if args.json:
+        command.append("--json")
+    if args.print_cmd or args.dry_run:
+        print("  $ " + " ".join(quote(c) for c in command))
+    if args.dry_run:
+        return
+    raise SystemExit(subprocess.run(command).returncode)
+
+
 def cmd_battery(args) -> None:
     apply_account(args)
     battery = json.loads(pathlib.Path(args.file).read_text())
@@ -529,6 +552,14 @@ def build_parser() -> argparse.ArgumentParser:
     canonical = subparsers.add_parser("canonical", help="print the exact string that was hashed")
     canonical.add_argument("spec", type=int)
     canonical.set_defaults(func=cmd_canonical)
+
+    run = subparsers.add_parser("run", help="CI gate: DECIDABLE / AMBIGUOUS / UNDECIDABLE from a report")
+    run.add_argument("report", help="Jastrow report JSON")
+    run.add_argument("--threshold", type=float, default=0.25)
+    run.add_argument("--malformed-threshold", type=float, default=0.05)
+    run.add_argument("--allow-fixture", action="store_true")
+    run.add_argument("--json", action="store_true")
+    run.set_defaults(func=cmd_run)
 
     battery = subparsers.add_parser("battery", help="register, probe and report a battery file")
     battery.add_argument("file")

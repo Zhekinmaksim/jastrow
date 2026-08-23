@@ -107,7 +107,13 @@ Then run:
 
 ```bash
 python3 scripts/check_report.py web/report.json
+python3 cli/jastrow.py run web/report.json --threshold 0.25
 ```
+
+`jastrow run` is the CI gate. It returns `DECIDABLE` with exit code `0`,
+`AMBIGUOUS` with exit code `1`, and `UNDECIDABLE` with exit code `2`. A non-zero
+result is publishable as a finding, but it should not be described as a clean
+spec.
 
 ## 6. Commit the report on chain
 

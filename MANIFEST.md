@@ -20,6 +20,9 @@
 | `scripts/receipt_report.py` | builds a report from Explorer receipts and traces |
 | `scripts/check_report.py` | audits report math and receipt evidence |
 | `scripts/calibrate.py` | optional off-chain prompt calibration |
+| `scripts/jastrow_gate.py` | CI gate over a Jastrow report |
+| `scripts/corpus_snapshot.py` | derives builder-program corpus scoring context |
+| `data/portal-corpus-summary.json` | derived summary from the local 1,329-project corpus |
 
 ## Web
 
@@ -46,7 +49,7 @@
 
 | path | purpose |
 | --- | --- |
-| `README.md` | human-readable project overview |
+| `README.md` | human-readable project overview and CI gate docs |
 | `DEPLOY.md` | runbook |
 | `SUBMISSION.md` | portal copy draft |
 | `COSTS.md` | transaction arithmetic and receipt costs |

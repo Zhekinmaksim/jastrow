@@ -1,0 +1,51 @@
+{
+  "glbench": {
+    "date": "2026-06-13T00:00:00Z",
+    "points": 34,
+    "positioning": "GLBench scores validators; Jastrow scores whether a specification is decidable.",
+    "rank": 789,
+    "title": "Glbench"
+  },
+  "high_score_count_30_plus": 51,
+  "keyword_stats": {
+    "benchmark": {
+      "count": 12,
+      "keyword": "benchmark",
+      "max_points": 34,
+      "mean_points": 12.5
+    },
+    "consensus": {
+      "count": 771,
+      "keyword": "consensus",
+      "max_points": 50,
+      "mean_points": 12.51
+    },
+    "dashboard": {
+      "count": 39,
+      "keyword": "dashboard",
+      "max_points": 40,
+      "mean_points": 14.21
+    },
+    "report": {
+      "count": 100,
+      "keyword": "report",
+      "max_points": 38,
+      "mean_points": 13.14
+    },
+    "research": {
+      "count": 66,
+      "keyword": "research",
+      "max_points": 26,
+      "mean_points": 12.3
+    },
+    "validator": {
+      "count": 829,
+      "keyword": "validator",
+      "max_points": 100,
+      "mean_points": 13.07
+    }
+  },
+  "project_count": 1329,
+  "source_file": "/Users/zmaxx/Downloads/genlayer_builder_projects.md",
+  "source_sha256": "839e84f4dafe5af1801e971d6b6f3fa5eed3b4dcc047325aae118dc9c4a2b5c8"
+}

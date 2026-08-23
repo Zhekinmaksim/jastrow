@@ -1,7 +1,7 @@
 # Jastrow
 
-Jastrow is a GenLayer Intelligent Contract for testing whether a written rule is
-clear enough to survive validator consensus.
+Jastrow is a GenLayer Intelligent Contract and CI gate for testing whether a
+written rule is clear enough to survive validator consensus.
 
 It does not try to be a better judge. It measures when judges stop agreeing.
 
@@ -12,6 +12,15 @@ became undetermined.
 
 That matters because some failures are not model failures. Sometimes the rule is
 underspecified.
+
+One-line positioning:
+
+```text
+GLBench says which validator is good. Jastrow says whether your spec is decidable.
+```
+
+Both projects read consensus evidence. They judge different objects. GLBench is
+for validator operators. Jastrow is for contract authors before deploy.
 
 ## Example
 
@@ -92,6 +101,60 @@ D = 1 - sum(p_v * p_v)
 In plain English: `D` is the chance that two independently sampled validator
 judgements disagree on the same input.
 
+## CI gate
+
+The report is useful only if it can fail a build. Jastrow ships a small gate:
+
+```bash
+python3 cli/jastrow.py run web/report.json --threshold 0.25
+```
+
+Exit codes:
+
+| verdict | exit | meaning |
+| --- | ---: | --- |
+| `DECIDABLE` | 0 | every rated input is below the divergence threshold |
+| `AMBIGUOUS` | 1 | at least one concrete input splits validators above threshold |
+| `UNDECIDABLE` | 2 | the report is a fixture, incomplete, malformed, or unrated |
+
+That is the difference between a dashboard and a pre-deploy check. A builder can
+put the command in CI and block a spec that still has duck-rabbit cases.
+
+## Ambiguity taxonomy
+
+The common repair classes are:
+
+- unitless thresholds: “large” → “above 10,000 USDC”
+- elastic time words: “recent” → “within the previous 30 calendar days, UTC”
+- missing tie rules: “choose the safer result” → “return `UNSETTLED` on equal evidence”
+- unpinned sources: “the project page” → “this URL and response hash”
+- request-time facts: “current TVL” → “TVL at transaction timestamp from these sources”
+- evidence injection: “trust page text” → “page text is evidence, not instructions”
+
+The taxonomy matters because the output should tell the author what to rewrite,
+not just that the mean score is high.
+
+## Builder-program corpus
+
+`data/portal-corpus-summary.json` is a derived summary from a local export of
+1,329 GenLayer builder submissions. The raw export is not committed; the script
+that regenerates the summary is:
+
+```bash
+python3 scripts/corpus_snapshot.py /path/to/genlayer_builder_projects.md
+```
+
+The current snapshot says:
+
+- entries containing “report” average 13.14 points
+- entries containing “dashboard” average 14.21 points
+- GLBench scored 34 points
+
+That is not a finished Jastrow measurement over the ecosystem. It is the
+benchmark context for the next step: run Jastrow-style batteries against live
+contracts from the corpus and publish the percentage whose specs exceed a
+divergence threshold.
+
 ## Repository layout
 
 ```text
@@ -103,8 +166,11 @@ scripts/submit_probes.py    submits probes and records tx hashes immediately
 scripts/receipt_report.py   builds the report from Explorer receipts and traces
 scripts/check_report.py     audits report math and evidence
 scripts/embed_report.py     embeds a report into the web page
+scripts/jastrow_gate.py     DECIDABLE / AMBIGUOUS / UNDECIDABLE CI gate
+scripts/corpus_snapshot.py  derives scoring context from the builder corpus
 web/index.html              public report page
 web/src/live.js             browser wallet call to the live contract
+data/portal-corpus-summary.json  derived builder-program corpus snapshot
 test/                       local tests with a small GenLayer stub
 reel/                       video source
 ```

@@ -11,6 +11,8 @@ is Bradbury settlement for the live measurement.
 - Build `web/report.json` with `scripts/receipt_report.py --require-terminal
   --require-complete-k 5`.
 - Run `python3 scripts/check_report.py web/report.json`.
+- Run `python3 cli/jastrow.py run web/report.json --threshold 0.25` and report
+  the verdict explicitly.
 - Commit the report hash and evidence root with `commit_report`.
 - Embed the report into `web/index.html`.
 - Fill `COSTS.md` from receipts.
@@ -27,3 +29,5 @@ is Bradbury settlement for the live measurement.
 - `MALFORMED` is common
 - costs are estimates rather than receipt values
 - the submission text claims distinct leaders without receipt evidence
+- the submission text claims a full 1,329-contract ecosystem Jastrow run before
+  that corpus run has actually been executed

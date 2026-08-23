@@ -4,15 +4,23 @@ Category: Intelligent Contract project.
 
 ## Short description
 
-Jastrow measures where a GenLayer specification is ambiguous.
+Jastrow is a pre-deploy ambiguity gate for GenLayer specs.
 
-A user gives the contract a spec, a closed answer set, and test inputs. The
-system runs those inputs through GenLayer validator consensus and reports where
-validators split. Those are the cases most likely to create appeals or unstable
-outcomes later.
+A user gives the contract a spec, a closed answer set, and test inputs. Jastrow
+runs those inputs through GenLayer validator consensus, reports where validators
+split, and exposes a CLI gate that returns `DECIDABLE`, `AMBIGUOUS`, or
+`UNDECIDABLE` with CI-friendly exit codes.
 
 It does not claim that AI found the right answer. It measures when the answer
 is not stable.
+
+One-line positioning against the closest neighbor:
+
+```text
+GLBench says which validator is good. Jastrow says whether your spec is decidable.
+```
+
+GLBench is for validator operators. Jastrow is for contract authors.
 
 ## Problem
 
@@ -57,6 +65,16 @@ can connect a wallet, choose an input, call `probe(spec_id, input_id)`, get a
 transaction hash immediately, and watch the lifecycle move through pending,
 accepted, finalized, undetermined, or error states.
 
+The CLI gate can be run locally:
+
+```bash
+python3 cli/jastrow.py run web/report.json --threshold 0.25
+```
+
+Exit code `0` means `DECIDABLE`. Exit code `1` means `AMBIGUOUS`. Exit code `2`
+means `UNDECIDABLE` because the run is incomplete, malformed, unrated, or still
+a fixture.
+
 ## What is measured
 
 For each input, Jastrow reports the answer distribution and:
@@ -78,6 +96,12 @@ ensemble measures the ensemble chosen by the author, not the population that
 will judge the contract.
 
 Jastrow uses GenLayer's own validator set as the instrument.
+
+The local builder-program corpus also shows why this has to be a tool, not just
+a report. In a 1,329-project export, entries containing “report” average 13.14
+points and entries containing “dashboard” average 14.21 points. GLBench scored
+34 by measuring consensus behavior on the builder's own object. Jastrow follows
+that shape: the object is not the validator, it is the builder's specification.
 
 ## Live evidence to include before final submit
 
@@ -108,9 +132,11 @@ Jastrow uses GenLayer's own validator set as the instrument.
 
 ## Suggested portal text
 
-Jastrow is an ambiguity meter for GenLayer specs. It runs the same cases
-through GenLayer validator consensus and reports where answers split. The goal
-is to find underspecified inputs before they become appeals.
+Jastrow is a pre-deploy ambiguity gate for GenLayer specs. GLBench says which
+validator is good; Jastrow says whether your spec is decidable. It runs the same
+cases through GenLayer validator consensus and reports the concrete inputs where
+answers split. Those are the clauses to rewrite before a contract takes user
+value.
 
 The contract stores the spec, inputs, accepted probes, and report commitments.
 The published report is built from transaction receipts, so it includes
@@ -121,3 +147,12 @@ anchored back on chain with `commit_report`.
 The frontend calls the deployed contract directly. A reviewer can connect a
 wallet, choose an input, submit `probe(spec_id, input_id)`, receive the
 transaction hash immediately, and watch the full transaction lifecycle.
+
+The repo also includes a CI gate:
+
+```bash
+python3 cli/jastrow.py run web/report.json --threshold 0.25
+```
+
+It returns `DECIDABLE`, `AMBIGUOUS`, or `UNDECIDABLE` with non-zero exit codes
+for specs that should not be deployed unchanged.
