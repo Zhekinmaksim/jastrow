@@ -4,7 +4,7 @@
 
 | path | purpose |
 | --- | --- |
-| `contracts/jastrow.py` | Intelligent Contract |
+| `contracts/jastrow.py` | Intelligent Contract, report commitments, and bonded spec challenges |
 | `contracts/non_comparative_probe.py` | older experiment, kept for evidence only |
 | `test/harness.py` | local GenLayer stub |
 | `test/test_jastrow.py` | contract tests |

@@ -120,6 +120,27 @@ Exit codes:
 That is the difference between a dashboard and a pre-deploy check. A builder can
 put the command in CI and block a spec that still has duck-rabbit cases.
 
+## Bonded spec challenges
+
+The contract now also includes a small market loop for the “money at risk”
+version of the idea:
+
+1. A sponsor opens a challenge with `open_challenge(spec_id, threshold_milli, report_uri)` and sends a GEN bond.
+2. A challenger calls `claim_challenge(challenge_id, input_id)` against a concrete input.
+3. The contract recomputes the current report from accepted probes.
+4. If that input is rated and its divergence is at or above the threshold, the bond is paid to the challenger.
+5. If every input is rated and the worst divergence is below the threshold, the sponsor can call `release_challenge(challenge_id)`.
+
+This turns the measurement from “here is a report” into “put GEN behind the
+claim that this spec is decidable.” The current implementation is intentionally
+small: it uses the contract-computed accepted-probe report. The stricter
+publication report still comes from receipts, because receipts also include
+`UNDETERMINED` transactions that contract storage cannot see.
+
+The already-running Bradbury measurement address is left intact while its
+receipts settle. Deploy the challenge-enabled source when starting a new live
+run, otherwise the existing report manifest would point at the wrong contract.
+
 ## Ambiguity taxonomy
 
 The common repair classes are:
@@ -146,6 +167,8 @@ python3 scripts/corpus_snapshot.py /path/to/genlayer_builder_projects.md
 
 The current snapshot says:
 
+- 1,249 GitHub repositories are extractable from the export
+- 826 full contract addresses are extractable from the export
 - entries containing “report” average 13.14 points
 - entries containing “dashboard” average 14.21 points
 - GLBench scored 34 points
@@ -158,7 +181,7 @@ divergence threshold.
 ## Repository layout
 
 ```text
-contracts/jastrow.py        Intelligent Contract
+contracts/jastrow.py        Intelligent Contract, commitments, bonded challenges
 cli/jastrow.py              small wrapper around the official genlayer CLI
 calibration/battery.json    reference battery
 scripts/register_battery.py registers the spec and inputs

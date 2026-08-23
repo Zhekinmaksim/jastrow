@@ -8,6 +8,7 @@ import hashlib
 import json
 import pathlib
 import re
+from urllib.parse import urlparse
 
 
 def _projects(text: str) -> list[dict]:
@@ -41,6 +42,29 @@ def _keyword_stats(projects: list[dict], keyword: str) -> dict:
     }
 
 
+def _github_repositories(projects: list[dict]) -> list[str]:
+    repos = set()
+    for project in projects:
+        for match in re.finditer(r"https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", project["text"]):
+            url = match.group(0).rstrip(").,")
+            parsed = urlparse(url)
+            parts = [p for p in parsed.path.split("/") if p]
+            if len(parts) >= 2:
+                name = parts[1]
+                if name.endswith(".git"):
+                    name = name[:-4]
+                repos.add(f"https://github.com/{parts[0]}/{name}")
+    return sorted(repos, key=str.lower)
+
+
+def _contract_addresses(projects: list[dict]) -> list[str]:
+    addresses = set()
+    for project in projects:
+        for match in re.finditer(r"0x[a-fA-F0-9]{40}", project["text"]):
+            addresses.add(match.group(0))
+    return sorted(addresses, key=str.lower)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("markdown", type=pathlib.Path)
@@ -53,10 +77,16 @@ def main() -> int:
         (p for p in projects if "glbench" in p["title"].lower() or "glbench" in p["text"].lower()),
         None,
     )
+    repos = _github_repositories(projects)
+    contracts = _contract_addresses(projects)
     summary = {
         "source_file": str(args.markdown),
         "source_sha256": hashlib.sha256(text.encode()).hexdigest(),
         "project_count": len(projects),
+        "github_repository_count": len(repos),
+        "github_repository_sample": repos[:20],
+        "contract_address_count": len(contracts),
+        "contract_address_sample": contracts[:20],
         "keyword_stats": {
             key: _keyword_stats(projects, key)
             for key in ("research", "report", "dashboard", "benchmark", "validator", "consensus")

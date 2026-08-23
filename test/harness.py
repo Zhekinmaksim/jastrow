@@ -38,6 +38,13 @@ def u32(value: int) -> int:
     return value
 
 
+def u256(value: int) -> int:
+    value = int(value)
+    if value < 0 or value > 2**256 - 1:
+        raise ValueError("u256 out of range")
+    return value
+
+
 class DynArray(list):
     @classmethod
     def __class_getitem__(cls, _item):
@@ -56,13 +63,22 @@ def allow_storage(cls):
 
 class _Message:
     sender_address = Address.ZERO
+    value = 0
+
+
+class _WriteDecorator:
+    def __call__(self, fn):
+        fn._genlayer_write = True
+        return fn
+
+    def payable(self, fn):
+        fn._genlayer_write = True
+        fn._genlayer_payable = True
+        return fn
 
 
 class _Public:
-    @staticmethod
-    def write(fn):
-        fn._genlayer_write = True
-        return fn
+    write = _WriteDecorator()
 
     @staticmethod
     def view(fn):
@@ -113,6 +129,11 @@ class _GL:
     nondet = _Nondet
     eq_principle = _EqPrinciple
 
+    class evm:
+        @staticmethod
+        def contract_interface(cls):
+            return cls
+
 
 gl = _GL()
 
@@ -125,6 +146,7 @@ def _install_genlayer_stub() -> None:
         "TreeMap": TreeMap,
         "allow_storage": allow_storage,
         "u32": u32,
+        "u256": u256,
         "gl": gl,
     }.items():
         setattr(mod, name, value)
@@ -174,6 +196,38 @@ class _Actor:
                 raise
             finally:
                 gl.message.sender_address = old_sender
+
+        return call
+
+    def payable(self, value: int) -> "_PayableActor":
+        return _PayableActor(self.bench, self.addr, value)
+
+
+class _PayableActor(_Actor):
+    def __init__(self, bench: "Bench", addr: Address, value: int):
+        super().__init__(bench, addr)
+        self.value = int(value)
+
+    def __getattr__(self, name: str):
+        attr = getattr(self.bench.c, name)
+        if not callable(attr):
+            return attr
+
+        def call(*args, **kwargs):
+            before = copy.deepcopy(self.bench.c)
+            old_sender = gl.message.sender_address
+            old_value = gl.message.value
+            gl.message.sender_address = self.addr
+            gl.message.value = self.value
+            try:
+                return attr(*args, **kwargs)
+            except Exception:
+                if getattr(attr, "_genlayer_write", False):
+                    self.bench.c = before
+                raise
+            finally:
+                gl.message.sender_address = old_sender
+                gl.message.value = old_value
 
         return call
 

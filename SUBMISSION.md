@@ -58,6 +58,12 @@ That design also handles long confirmations. The async runner stores the
 transaction hash as soon as it is printed, then the receipt collector finishes
 the report later.
 
+The source contract also has a bonded challenge loop. A sponsor stakes GEN on
+the claim that a spec is below a divergence threshold. A challenger points to a
+specific input; if the contract-computed report shows that input crossing the
+threshold, the challenger receives the bond. If the report is fully rated and
+below threshold, the sponsor can release the bond.
+
 ## What reviewers can try
 
 The frontend is a real contract caller. With a chain report embedded, a reviewer
@@ -99,9 +105,11 @@ Jastrow uses GenLayer's own validator set as the instrument.
 
 The local builder-program corpus also shows why this has to be a tool, not just
 a report. In a 1,329-project export, entries containing “report” average 13.14
-points and entries containing “dashboard” average 14.21 points. GLBench scored
-34 by measuring consensus behavior on the builder's own object. Jastrow follows
-that shape: the object is not the validator, it is the builder's specification.
+points and entries containing “dashboard” average 14.21 points. The same export
+contains 1,249 GitHub repositories and 826 full contract addresses for the next
+corpus run. GLBench scored 34 by measuring consensus behavior on the builder's
+own object. Jastrow follows that shape: the object is not the validator, it is
+the builder's specification.
 
 ## Live evidence to include before final submit
 
@@ -111,9 +119,12 @@ that shape: the object is not the validator, it is the builder's specification.
 - Deploy tx:
   `0x1bb7db3c0c2c2f1d639ca742cc36e8e5f0f17b58cc8642b88ef0e85186d61ef0`
 - Current embedded report: fixture only, not a live measurement
-- Live probe manifest: `runs/bradbury-v2-probes.jsonl`, 25/40 hashes submitted
+- Live probe manifest: `runs/bradbury-v2-probes.jsonl`, 37/40 hashes submitted
 - Current blocker: Bradbury still returns pending/fetch-error receipts and
   rejects the next probe while the account/consensus queue is full
+- Challenge-market methods are present in source and local tests. Deploy them
+  only if restarting the live contract is acceptable, because the current
+  Bradbury report manifest belongs to the address above.
 - Report hash: fill only after `receipt_report.py --require-terminal
   --require-complete-k 5` succeeds
 - Evidence root: fill only after the same successful receipt report
@@ -143,6 +154,11 @@ The published report is built from transaction receipts, so it includes
 accepted and undetermined probes, first-round leader observations, validator set
 size, and distinct leader count. The report hash and evidence root are then
 anchored back on chain with `commit_report`.
+
+The source contract also includes bonded spec challenges: a sponsor stakes GEN
+that a spec is below a divergence threshold, and a challenger can win the bond
+by pointing to a concrete splitting input. That is the protocol version of the
+same measurement.
 
 The frontend calls the deployed contract directly. A reviewer can connect a
 wallet, choose an input, submit `probe(spec_id, input_id)`, receive the

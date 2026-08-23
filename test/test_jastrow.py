@@ -550,6 +550,40 @@ def test_report_commitment_is_owner_only_and_paged():
     )
 
 
+def test_challenge_pays_out_when_a_rated_input_crosses_threshold():
+    bench, spec_id = fresh()
+    input_id = bench.by(ALICE).add_input(spec_id, "split", "borderline case")
+    probe_with(bench, spec_id, input_id, "ACCEPT", "ACCEPT", "REJECT")
+
+    challenge = bench.by(ALICE).payable(123).open_challenge(
+        spec_id, 300, "https://example.test/report.json"
+    )
+    assert challenge["bond"] == 123
+    assert challenge["status"] == "OPEN"
+    assert bench.c.get_overview()["challenge_count"] == 1
+
+    claimed = bench.by(BOB).claim_challenge(challenge["challenge_id"], input_id)
+    assert claimed["status"] == "CLAIMED"
+    assert claimed["challenger"] == BOB.as_hex
+    assert claimed["input_label"] == "split"
+    assert claimed["d_milli"] == 444
+    expect_fail(bench.by(BOB).claim_challenge, challenge["challenge_id"], input_id)
+
+
+def test_challenge_releases_only_when_every_input_is_rated_and_below_threshold():
+    bench, spec_id = fresh()
+    input_id = bench.by(ALICE).add_input(spec_id, "clean", "obvious accept")
+    probe_with(bench, spec_id, input_id, "ACCEPT", "ACCEPT", "ACCEPT")
+
+    challenge = bench.by(ALICE).payable(456).open_challenge(
+        spec_id, 300, "https://example.test/report.json"
+    )
+    expect_fail(bench.by(BOB).release_challenge, challenge["challenge_id"])
+    released = bench.by(ALICE).release_challenge(challenge["challenge_id"])
+    assert released["status"] == "RELEASED"
+    assert released["bond"] == 456
+
+
 # ---------------------------------------------------------------------------
 # Standalone runner
 # ---------------------------------------------------------------------------

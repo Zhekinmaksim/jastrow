@@ -125,7 +125,38 @@ genlayer write 0xYOUR_CONTRACT commit_report \
   --args 0 REPORT_HASH EVIDENCE_ROOT https://YOUR_VERCEL_URL/report.json 40 ACCEPTED_COUNT UNDETERMINED_COUNT
 ```
 
-## 7. Embed the report in the page
+## 7. Optional: put GEN behind the spec
+
+The challenge loop is the money-at-risk demo. Use it only after the spec and
+inputs are registered on the deployed contract.
+
+Sponsor opens a bond:
+
+```bash
+genlayer write 0xYOUR_CONTRACT open_challenge \
+  --args 0 250 https://YOUR_VERCEL_URL/report.json \
+  --value 1000000000000000000
+```
+
+Challenger claims it with a concrete splitting input:
+
+```bash
+genlayer write 0xYOUR_CONTRACT claim_challenge \
+  --args 0 INPUT_ID
+```
+
+Sponsor can release only when the current contract-computed report is fully
+rated and the worst input is below threshold:
+
+```bash
+genlayer write 0xYOUR_CONTRACT release_challenge \
+  --args 0
+```
+
+This is not a substitute for `receipt_report.py`; it is the on-chain incentive
+loop around the same idea.
+
+## 8. Embed the report in the page
 
 ```bash
 python3 scripts/embed_report.py web/report.json \
@@ -141,11 +172,11 @@ npm run build
 make bundle
 ```
 
-## 8. Fill costs
+## 9. Fill costs
 
 Fill `COSTS.md` from receipts. Do not use estimates for the final submission.
 
-## 9. Push and deploy
+## 10. Push and deploy
 
 ```bash
 git remote add origin https://github.com/Zhekinmaksim/jastrow.git

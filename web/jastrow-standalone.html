@@ -377,6 +377,7 @@ p { text-wrap: pretty; }
 }
 .positioning h2,
 .tool-gate h2,
+.challenge h2,
 .taxonomy h2,
 .corpus h2,
 .hostile h2 {
@@ -428,6 +429,33 @@ p { text-wrap: pretty; }
   color: var(--muted);
 }
 .exit-codes b { color: var(--ink); font-weight: 500; }
+
+.challenge {
+  display: grid;
+  grid-template-columns: minmax(0, .95fr) minmax(320px, 1.05fr);
+  gap: 28px 54px;
+  align-items: start;
+}
+.challenge-flow {
+  display: grid;
+  gap: 1px;
+  background: var(--hair);
+  border: 1px solid var(--hair);
+}
+.challenge-flow div {
+  background: var(--face);
+  padding: 14px 16px;
+  font-family: var(--data);
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.challenge-flow b {
+  display: block;
+  color: var(--ink);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
 
 .taxonomy-grid {
   display: grid;
@@ -718,6 +746,7 @@ details .after { margin: 0; padding: 0 20px 20px; color: var(--muted); font-size
   .live-button { width: 100%; }
   .positioning,
   .tool-gate,
+  .challenge,
   .taxonomy-grid,
   .corpus,
   .hostile { grid-template-columns: 1fr; }
@@ -818,6 +847,19 @@ python3 cli/jastrow.py run web/report.json --threshold 0.25
 echo $?</pre>
   </section>
 
+  <section class="challenge">
+    <div>
+      <h2>Put GEN behind the claim</h2>
+      <p class="prose">The source contract includes a bonded challenge loop. A sponsor stakes GEN that a spec is decidable below a threshold. A challenger wins the bond by pointing to the exact input that crosses that threshold.</p>
+      <p class="dim">This is the protocol version of the measurement. The current Bradbury measurement address stays pinned while its receipts settle; deploy the challenge-enabled source when restarting the run.</p>
+    </div>
+    <div class="challenge-flow">
+      <div><b>open_challenge</b> Sponsor sends GEN and names the spec, threshold, and report URI.</div>
+      <div><b>claim_challenge</b> Challenger submits the splitting input id; the contract recomputes the report and pays if divergence is high enough.</div>
+      <div><b>release_challenge</b> Sponsor recovers the bond only when every input is rated and the worst input is below threshold.</div>
+    </div>
+  </section>
+
   <section>
     <div class="section-head">
       <h2>Every input, worst first</h2>
@@ -875,6 +917,8 @@ echo $?</pre>
     </div>
     <div class="corpus-stats">
       <div><span class="num">1329</span><span class="caption">builder projects in the local corpus snapshot</span></div>
+      <div><span class="num">1249</span><span class="caption">GitHub repositories extractable for the corpus run</span></div>
+      <div><span class="num">826</span><span class="caption">full contract addresses extractable from the export</span></div>
       <div><span class="num">13.1</span><span class="caption">mean points for entries containing “report”</span></div>
       <div><span class="num">14.2</span><span class="caption">mean points for entries containing “dashboard”</span></div>
       <div><span class="num">34</span><span class="caption">GLBench points; closest neighbor and positioning risk</span></div>

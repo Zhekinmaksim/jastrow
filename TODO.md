@@ -5,9 +5,9 @@ is Bradbury settlement for the live measurement.
 
 ## Required
 
-- Wait for the 25 submitted Bradbury probes in
+- Wait for the 37 submitted Bradbury probes in
   `runs/bradbury-v2-probes.jsonl` to leave `PENDING` / `FETCH_ERROR`.
-- Submit the remaining 15 probes after the account/consensus queue clears.
+- Submit the remaining 3 probes after the account/consensus queue clears.
 - Build `web/report.json` with `scripts/receipt_report.py --require-terminal
   --require-complete-k 5`.
 - Run `python3 scripts/check_report.py web/report.json`.
@@ -31,3 +31,6 @@ is Bradbury settlement for the live measurement.
 - the submission text claims distinct leaders without receipt evidence
 - the submission text claims a full 1,329-contract ecosystem Jastrow run before
   that corpus run has actually been executed
+- the submission text claims the challenge market is deployed at the current
+  Bradbury measurement address before a challenge-enabled contract is actually
+  deployed
