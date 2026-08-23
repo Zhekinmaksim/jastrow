@@ -1,140 +1,143 @@
 # Jastrow
 
-Jastrow is a GenLayer Intelligent Contract for finding ambiguous specs before
-they turn into disputed outcomes.
+Jastrow is a GenLayer Intelligent Contract for testing whether a written rule is
+clear enough to survive validator consensus.
 
-The idea is simple: take one specification, run the same cases through the
-validator set, and look at where independent judges split. Those cases are the
-parts of the spec that need work.
+It does not try to be a better judge. It measures when judges stop agreeing.
 
-This is not an AI judge that tells you the "right" answer. It is a measuring
-tool. It shows where the answers stop being stable.
+The contract stores a spec, a closed answer set, and a battery of inputs. The
+runner sends the same inputs through GenLayer consensus several times. The
+report shows which inputs converge, which inputs split, and which transactions
+became undetermined.
 
-## Why this exists
+That matters because some failures are not model failures. Sometimes the rule is
+underspecified.
 
-Some failures are not caused by a bad validator or a bad model. The spec itself
-can be unclear.
+## Example
 
-The example this repo uses is a campaign rule: a post qualifies if it includes
-the `#GenLayer` hashtag and a project link. That sounds clear until you test
-real edge cases:
+The reference battery uses a small campaign rule:
+
+> A post qualifies if it includes the `#GenLayer` hashtag and a project link.
+
+That sounds simple until the inputs look like real user content:
 
 - `#GenLayer`
 - `# GenLayer`
-- hashtag in an image
-- a reply that links to the project but not in the main post
-- plural or cased variants
+- `#genlayer`
+- hashtag only inside an image
+- the project link appears in a reply
+- plural or quoted variants
 
-Jastrow turns those edge cases into a report. Clean cases should converge.
-Ambiguous cases should split. If everything splits, the prompt is broken. If
-nothing splits, the battery is too weak or the validator set is too uniform.
+A good spec should make the clean case and the missing case boring. They should
+settle near zero divergence. The interesting cases are the edge cases where
+validators split.
 
-## What changed after the first live run
+If every case splits, the prompt is broken. If no case splits, the battery is
+too weak or the validator set is too uniform.
 
-The first version assumed that validators could be asked to record the leader's
-answer even when they disagreed with it. Bradbury did not behave that way. A
-comparative probe ended `UNDETERMINED / NONDET_DISAGREE`, which means validators
-were not just recording the leader output.
+## What changed after the first Bradbury run
 
-So the project now uses the honest version:
+The first prototype tested a permissive equivalence principle: validators were
+asked to record the leader's answer instead of judging whether they agreed with
+it.
 
-- each probe is a normal comparative consensus transaction
-- disagreement is allowed to surface as `UNDETERMINED`
-- the publishable report is built from transaction receipts and traces
-- leader identity and validator set size come from Explorer evidence
-- the final report is anchored back on chain with `commit_report`
+Bradbury did not behave permissively. A split transaction ended as
+`UNDETERMINED / NONDET_DISAGREE`.
 
-That makes long transaction confirmation less painful too. The runner stores a
-transaction hash as soon as the CLI prints it, then a separate collector waits
-for receipts and builds the report later.
+The project now treats that as evidence instead of trying to work around it:
 
-## What the contract does
+- probes are normal comparative GenLayer transactions
+- validator disagreement is visible in receipt status
+- the public report is built from receipts and traces, not only contract storage
+- leader count and validator set size come from Explorer evidence
+- the final report can be anchored back on chain with `commit_report`
 
-`contracts/jastrow.py` stores:
+This also handles slow confirmations. The submitter records the transaction hash
+as soon as the CLI prints it. A separate collector waits for receipts and builds
+the report later.
 
-- a spec title and question
-- a closed answer vocabulary, such as `ACCEPT,REJECT`
-- the input cases to test
-- accepted probe results
-- report commitments
+## Live project
 
-The accepted probe log is useful, but it is not the full measurement. Failed or
-undetermined probes cannot be written into contract storage, so the public
-report is computed from receipts.
+- Repository: <https://github.com/Zhekinmaksim/jastrow>
+- Vercel page: <https://jastrow.vercel.app>
+- Bradbury contract: `0xC8823fdeA01961D65b569D00C09c541E5615CC69`
 
-The report counts, per input:
+The page includes a live contract panel. A reviewer can connect a wallet, choose
+an input, submit `probe(spec_id, input_id)`, receive the transaction hash, and
+watch the transaction move through the normal GenLayer lifecycle.
 
-- how many probes returned each answer
-- how often judges returned `UNSETTLED`
-- how often output was malformed or outside the vocabulary
-- the divergence score `D`
+If the embedded report says it is a fixture, treat it as a fixture. The repo is
+set up so the fixture can be replaced by a receipt-backed report after the
+Bradbury transactions settle.
+
+## What the report measures
+
+For each input, the report records:
+
+- answer counts
+- `UNSETTLED`, `OUT_OF_VOCAB`, and `MALFORMED` counts
 - consensus status counts
-- distinct leaders seen in the receipt evidence
-- validator set size
+- first-round leader addresses seen in receipts
+- validator set size from receipt evidence
+- chain cost units where receipts expose them
 
-`D` is:
+Divergence is reported as:
 
 ```text
 D = 1 - sum(p_v * p_v)
 ```
 
-where `p_v` is the fraction of scored probes that returned answer `v`.
+`p_v` is the fraction of scored probes that returned answer `v`.
 
-In plain English: `D` is the chance that two independent judges give different
-answers for the same input.
+In plain English: `D` is the chance that two independently sampled validator
+judgements disagree on the same input.
 
 ## Repository layout
 
 ```text
 contracts/jastrow.py        Intelligent Contract
 cli/jastrow.py              small wrapper around the official genlayer CLI
+calibration/battery.json    reference battery
+scripts/register_battery.py registers the spec and inputs
 scripts/submit_probes.py    submits probes and records tx hashes immediately
 scripts/receipt_report.py   builds the report from Explorer receipts and traces
-scripts/check_report.py     audits report math and receipt evidence
+scripts/check_report.py     audits report math and evidence
 scripts/embed_report.py     embeds a report into the web page
-scripts/bundle.py           builds a standalone HTML copy
-calibration/battery.json    reference test battery
 web/index.html              public report page
 web/src/live.js             browser wallet call to the live contract
-reel/                       Remotion video source
-test/                       no-dependency contract tests
+test/                       local tests with a small GenLayer stub
+reel/                       video source
 ```
 
 ## Local checks
 
-Run this first:
-
 ```bash
 make check
+npm install
+npm run build
 ```
 
-It runs:
+`make check` runs the contract tests, audits the embedded report, and checks the
+page math.
 
-- contract tests under a local GenLayer stub
-- report audit
-- page math audit
-
-The report audit matters. It recomputes every headline number from the rows and
-checks receipt evidence when the report came from chain data.
-
-## Deploy and run
+## Real Bradbury run
 
 You need Python 3, Node, the official `genlayer` CLI, and a funded Bradbury
 testnet account.
 
-Deploy:
+Deploy the contract:
 
 ```bash
 python3 cli/jastrow.py --print deploy
 ```
 
-Register the reference battery and inputs:
+Register the battery:
 
 ```bash
 python3 scripts/register_battery.py calibration/battery.json --print
 ```
 
-The expensive probe stage is submitted with the async runner:
+Submit probes asynchronously:
 
 ```bash
 python3 scripts/submit_probes.py \
@@ -143,7 +146,7 @@ python3 scripts/submit_probes.py \
   --manifest runs/bradbury-probes.jsonl
 ```
 
-Build the receipt report after receipts are available:
+Build the receipt-backed report after the transactions settle:
 
 ```bash
 python3 scripts/receipt_report.py runs/bradbury-probes.jsonl \
@@ -152,69 +155,33 @@ python3 scripts/receipt_report.py runs/bradbury-probes.jsonl \
   --title "Campaign rule v3" \
   --spec-hash YOUR_SPEC_HASH \
   --vocabulary ACCEPT,REJECT \
+  --require-terminal \
+  --require-complete-k 5 \
   --out web/report.json
 ```
 
-Audit it:
+Audit and embed it:
 
 ```bash
 python3 scripts/check_report.py web/report.json
-```
-
-Embed it into the page:
-
-```bash
 python3 scripts/embed_report.py web/report.json \
   --contract 0xYOUR_CONTRACT \
   --network "GenLayer Bradbury testnet" \
-  --site https://YOUR_VERCEL_URL
+  --site https://jastrow.vercel.app
 ```
 
-Then build the site:
+Then rebuild and deploy:
 
 ```bash
-npm install
 npm run build
+make bundle
+vercel --prod
 ```
 
-## Frontend
+## Submission rule
 
-The page is not just a static report. It has a live contract panel.
+Do not submit a fixture as a live measurement.
 
-With a chain report embedded, a reviewer can connect a wallet, choose an input,
-call `probe(spec_id, input_id)`, get the transaction hash immediately, and watch
-the lifecycle through accepted, finalized, undetermined, or error states.
-
-That is there because GenLayer transactions can take a while. A slow receipt
-should not make the UI look broken.
-
-## Deploying this repo
-
-The intended public repo is:
-
-```text
-https://github.com/Zhekinmaksim/jastrow
-```
-
-The intended host is Vercel. The project includes `vercel.json`; Vercel should
-install dependencies, run `npm run build`, and serve `dist`.
-
-Current deployment:
-
-```text
-https://jastrow.vercel.app
-```
-
-## Known limits
-
-This project is deliberately conservative about claims.
-
-- A fixture report is not a measurement.
-- Accepted-only contract storage is not the full report.
-- `UNDETERMINED` probes are part of the evidence, not a failure to hide.
-- Distinct leader counts must come from receipts until the contract runtime
-  exposes leader identity directly.
-- GEN costs must be filled from real receipts, not estimates.
-
-Those limits are visible in the docs and on the page because they change how
-the result should be read.
+The fixture is useful for checking the page, the math, and the docs. The final
+submission should use the receipt-backed report, real validator set size,
+distinct leader count, and real GEN cost numbers from Bradbury receipts.

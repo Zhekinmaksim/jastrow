@@ -83,13 +83,19 @@ Jastrow uses GenLayer's own validator set as the instrument.
 
 - Repository: https://github.com/Zhekinmaksim/jastrow
 - Vercel page: https://jastrow.vercel.app
-- Contract address: to be filled after deploy
-- Report hash: to be filled after receipt report
-- Evidence root: to be filled after receipt report
-- Validator set size: 32 was observed on Bradbury on 23 August 2026; final run
-  should state the live value from receipts
-- Distinct leaders: to be filled from Explorer receipt evidence
-- GEN costs: to be filled from receipts in `COSTS.md`
+- Contract address: `0xC8823fdeA01961D65b569D00C09c541E5615CC69`
+- Deploy tx:
+  `0x1bb7db3c0c2c2f1d639ca742cc36e8e5f0f17b58cc8642b88ef0e85186d61ef0`
+- Current embedded report: fixture only, not a live measurement
+- Live probe manifest: `runs/bradbury-v2-probes.jsonl`, 25/40 hashes submitted
+- Current blocker: Bradbury still returns pending/fetch-error receipts and
+  rejects the next probe while the account/consensus queue is full
+- Report hash: fill only after `receipt_report.py --require-terminal
+  --require-complete-k 5` succeeds
+- Evidence root: fill only after the same successful receipt report
+- Validator set size: fill from the final receipt evidence
+- Distinct leaders: fill from the final Explorer receipt evidence
+- GEN costs: fill from final receipts in `COSTS.md`
 
 ## Limits stated up front
 

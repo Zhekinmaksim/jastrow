@@ -51,6 +51,6 @@
 | `SUBMISSION.md` | portal copy draft |
 | `COSTS.md` | transaction arithmetic and receipt costs |
 | `TODO.md` | remaining live-data tasks |
-| `RUN-2026-08-23.md` | evidence from the failed first mechanism |
+| `RUN-2026-08-23.md` | current Bradbury run status and archived first-gate evidence |
 | `NOTICE.md` | third-party asset notices |
 | `LICENSE` | MIT license |

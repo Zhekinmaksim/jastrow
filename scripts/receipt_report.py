@@ -267,6 +267,17 @@ def main() -> int:
     parser.add_argument("--explorer", default="https://explorer-bradbury.genlayer.com")
     parser.add_argument("--rpc")
     parser.add_argument("--timeout", type=float, default=30.0)
+    parser.add_argument(
+        "--require-terminal",
+        action="store_true",
+        help="exit non-zero if any transaction is still pending or could not be fetched",
+    )
+    parser.add_argument(
+        "--require-complete-k",
+        type=int,
+        default=0,
+        help="exit non-zero unless every input has this many evidence rows",
+    )
     args = parser.parse_args()
 
     manifest = _load_jsonl(args.manifest)
@@ -305,6 +316,44 @@ def main() -> int:
         print(str(index) + "/" + str(len(manifest)) + " " + tx_hash + " " + item["status"], flush=True)
 
     report = _build_report(args, manifest, evidence)
+    if args.require_terminal:
+        non_terminal = [
+            item
+            for item in evidence
+            if item["status"] not in ("ACCEPTED", "FINALIZED", "UNDETERMINED", "SUCCESS")
+        ]
+        if non_terminal:
+            for item in non_terminal:
+                print(
+                    "non-terminal "
+                    + item["tx_hash"]
+                    + " "
+                    + item["label"]
+                    + " r"
+                    + str(item["round"])
+                    + " "
+                    + item["status"],
+                    file=sys.stderr,
+                )
+            return 2
+    if args.require_complete_k:
+        incomplete = [
+            row
+            for row in report["rows"]
+            if int(row["k_total"]) != int(args.require_complete_k)
+        ]
+        if incomplete:
+            for row in incomplete:
+                print(
+                    "incomplete "
+                    + row["label"]
+                    + " k_total="
+                    + str(row["k_total"])
+                    + " expected="
+                    + str(args.require_complete_k),
+                    file=sys.stderr,
+                )
+            return 3
     out = pathlib.Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")

@@ -72,10 +72,17 @@ to batch. The transaction count is the sample size; they are the same number.
 
 ## GEN figures
 
-The live gate failed before the reference battery, so there is no honest
-battery total or `compute_report` cost to publish yet. The Bradbury Explorer
-reported these exact chain totals for the transactions that did run on
-23 August 2026; they are receipt data, not estimates:
+The current v2 contract is deployed and the reference battery is partly
+submitted, but the run is not complete. As of the latest guarded collector run,
+25/40 probe hashes exist and most receipts are still `PENDING` or temporarily
+unfetchable. The next probe reverts before a hash is printed while the
+account/consensus queue is full.
+
+Do not publish a battery total from this partial state. Fill the final rows only
+after `receipt_report.py --require-terminal --require-complete-k 5` succeeds.
+
+The earlier gate run below is archived evidence from the first mechanism. These
+numbers are receipt data, not estimates:
 
 | item | transaction | GEN |
 | --- | --- | ---: |

@@ -81,11 +81,15 @@ python3 scripts/receipt_report.py runs/bradbury-probes.jsonl \
   --title "Campaign rule v3" \
   --spec-hash YOUR_SPEC_HASH \
   --vocabulary ACCEPT,REJECT \
+  --require-terminal \
+  --require-complete-k 5 \
   --out web/report.json
 ```
 
 If some transactions are still pending, wait and rerun the collector. The
-manifest is the source of truth.
+manifest is the source of truth. The `--require-terminal` and
+`--require-complete-k` flags prevent an unfinished Bradbury run from being
+published as the final report.
 
 ## 5. Sanity check the result
 
