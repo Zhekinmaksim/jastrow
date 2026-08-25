@@ -50,7 +50,7 @@ The publishable report is built from transaction receipts and traces:
 
 - the contract pins the spec hash, input, vocabulary, and prompt
 - the leader observation is emitted in trace output
-- the collector records receipt status, leader, validator set size, and answer
+- the collector records receipt status, leader, observed committee size, and answer
 - the report computes divergence from that evidence
 - `commit_report` anchors the report hash and evidence root back on chain
 
@@ -121,11 +121,12 @@ builder's specification.
 - Live probe manifest: `runs/bradbury-v2-publish.jsonl`, 40/40 usable terminal
   receipts, five observations per input
 - Report hash:
-  `480bb949d6576b7b2900826ce03684942b3ebffb61a1113d7a72eb941fd3187b`
+  `83a6862538fdb05dda7725819dd9c5bbd2b24859768f3ee8bacfc834cfb9b4b2`
 - Evidence root:
   `93b17d1ba86dcdfbb72b930c0186dc70846fbda1dd1bf82e622d66ce5306d792`
-- Validator set size: 17
-- Distinct leaders: 23
+- Observed validator committee sizes: 5, 11, 12, 17
+- Distinct first-round leaders across receipts: 23
+- No single validator set size is claimed for the whole 40-transaction sample
 - Consensus: 40 accepted/finalized, 0 undetermined
 - GEN probe cost: 0.12573950147854495 GEN across 40 probe transactions
 - Challenge-market methods are present in source and local tests. Deploy them
@@ -151,9 +152,9 @@ value.
 
 The contract stores the spec, inputs, accepted probes, and report commitments.
 The published report is built from transaction receipts, so it includes
-accepted and undetermined probes, first-round leader observations, validator set
-size, and distinct leader count. The report hash and evidence root are then
-anchored back on chain with `commit_report`.
+accepted and undetermined probes, first-round leader observations, observed
+committee sizes, and distinct leader count. The report hash and evidence root
+can be anchored back on chain with `commit_report`.
 
 The source contract also includes bonded spec challenges: a sponsor stakes GEN
 that a spec is below a divergence threshold, and a challenger can win the bond

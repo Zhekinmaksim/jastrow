@@ -63,7 +63,7 @@ The project now treats that as evidence instead of trying to work around it:
 - probes are normal comparative GenLayer transactions
 - validator disagreement is visible in receipt status
 - the public report is built from receipts and traces, not only contract storage
-- leader count and validator set size come from Explorer evidence
+- leader count and observed committee sizes come from Explorer evidence
 - the final report can be anchored back on chain with `commit_report`
 
 This also handles slow confirmations. The submitter records the transaction hash
@@ -92,7 +92,7 @@ For each input, the report records:
 - `UNSETTLED`, `OUT_OF_VOCAB`, and `MALFORMED` counts
 - consensus status counts
 - first-round leader addresses seen in receipts
-- validator set size from receipt evidence
+- observed validator committee sizes from receipt evidence
 - chain cost units where receipts expose them
 
 Divergence is reported as:
@@ -283,5 +283,5 @@ vercel --prod
 Do not submit a fixture as a live measurement.
 
 The fixture is useful for checking the page, the math, and the docs. The final
-submission should use the receipt-backed report, real validator set size,
-distinct leader count, and real GEN cost numbers from Bradbury receipts.
+submission should use the receipt-backed report, observed validator committee
+sizes, distinct leader count, and real GEN cost numbers from Bradbury receipts.

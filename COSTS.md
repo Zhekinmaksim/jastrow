@@ -75,7 +75,7 @@ to batch. The transaction count is the sample size; they are the same number.
 The live Bradbury report is built from `runs/bradbury-v2-publish.jsonl`, a clean
 40-transaction publish manifest with exactly five usable receipt-backed
 observations for each of the eight inputs. The report hash is
-`480bb949d6576b7b2900826ce03684942b3ebffb61a1113d7a72eb941fd3187b`.
+`83a6862538fdb05dda7725819dd9c5bbd2b24859768f3ee8bacfc834cfb9b4b2`.
 
 The probe cost below is read from `web/report.json`:
 

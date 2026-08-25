@@ -175,8 +175,19 @@ def main() -> int:
                     "Explorer leader visibility needs a numeric distinct_leaders")
         audit.check(independence.get("distinct_leaders", 0) >= 0,
                     "distinct_leaders is negative")
-        audit.check(independence.get("validator_set_size", 0) > 0,
-                    "Explorer report does not state validator_set_size")
+        observed_sizes = independence.get("validator_set_size_observed_values")
+        audit.check(isinstance(observed_sizes, list) and all(isinstance(v, int) and v > 0 for v in observed_sizes),
+                    "Explorer report does not state observed validator set sizes")
+        if isinstance(observed_sizes, list) and len(observed_sizes) == 1:
+            audit.check(independence.get("validator_set_size") == observed_sizes[0],
+                        "fixed validator_set_size disagrees with observed size")
+            audit.check(independence.get("distinct_leaders", 0) <= observed_sizes[0],
+                        "distinct_leaders exceeds the fixed validator_set_size")
+        elif isinstance(observed_sizes, list) and len(observed_sizes) > 1:
+            audit.check(independence.get("validator_set_size") is None,
+                        "variable validator set sizes must not be collapsed into one validator_set_size")
+            audit.check("not constant" in str(independence.get("note", "")),
+                        "variable validator set sizes are not called out in the note")
     audit.close("the report states what bounds it")
 
     # 6. Receipt reports carry auditable transaction evidence.
@@ -204,6 +215,13 @@ def main() -> int:
         audit.check(len(tx_hashes) == len(set(tx_hashes)), "duplicate tx hash in evidence")
         audit.check(independence.get("distinct_leaders") == len(leaders),
                     "distinct_leaders disagrees with evidence")
+        observed_sizes = sorted({
+            item.get("validator_set_size")
+            for item in evidence
+            if isinstance(item.get("validator_set_size"), int) and item.get("validator_set_size") > 0
+        })
+        audit.check(independence.get("validator_set_size_observed_values") == observed_sizes,
+                    "observed validator set sizes disagree with evidence")
         consensus = report.get("consensus", {})
         accepted = statuses["ACCEPTED"] + statuses["FINALIZED"] + statuses["SUCCESS"]
         audit.check(consensus.get("accepted") == accepted,

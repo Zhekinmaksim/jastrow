@@ -936,8 +936,14 @@
   "independence": {
     "distinct_leaders": 23,
     "leader_visibility": "explorer",
-    "note": "Leader identity is measured from Explorer receipts. Rates are over first-round leader observations, and consensus status is reported separately.",
-    "validator_set_size": 17
+    "note": "Leader identity is measured from Explorer receipts. The observed validator committee size is not constant across this 40-transaction run, so distinct_leaders is counted across receipts and no single validator_set_size is claimed for the whole sample.",
+    "validator_set_size": null,
+    "validator_set_size_observed_values": [
+      5,
+      11,
+      12,
+      17
+    ]
   },
   "inputs_rated": 7,
   "inputs_seen": 8,
@@ -951,7 +957,7 @@
     "manifest": "runs/bradbury-v2-publish.jsonl",
     "network": "GenLayer Bradbury testnet"
   },
-  "report_hash": "480bb949d6576b7b2900826ce03684942b3ebffb61a1113d7a72eb941fd3187b",
+  "report_hash": "83a6862538fdb05dda7725819dd9c5bbd2b24859768f3ee8bacfc834cfb9b4b2",
   "resolution_at_smallest_sample": [
     0,
     375,

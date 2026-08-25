@@ -375,8 +375,22 @@ def _build_report(args, manifest: list[dict], evidence: list[dict]) -> dict:
     accepted = sum(1 for e in evidence if e["status"] in ("ACCEPTED", "FINALIZED", "SUCCESS"))
     undetermined = sum(1 for e in evidence if e["status"] == "UNDETERMINED")
     leaders = sorted({e.get("leader", "") for e in evidence if e.get("leader")})
-    validator_sizes = [e.get("validator_set_size", 0) for e in evidence if e.get("validator_set_size")]
+    validator_sizes = sorted({e.get("validator_set_size", 0) for e in evidence if e.get("validator_set_size")})
     costs = [e.get("chain_total_cost", 0) for e in evidence]
+    fixed_validator_size = validator_sizes[0] if len(validator_sizes) == 1 else None
+    if fixed_validator_size is None and validator_sizes:
+        validator_note = (
+            "Leader identity is measured from Explorer receipts. The observed "
+            "validator committee size is not constant across this 40-transaction "
+            "run, so distinct_leaders is counted across receipts and no single "
+            "validator_set_size is claimed for the whole sample."
+        )
+    else:
+        validator_note = (
+            "Leader identity is measured from Explorer receipts. Rates are "
+            "over first-round leader observations, and consensus status is "
+            "reported separately."
+        )
 
     report = {
         "spec_id": int(args.spec),
@@ -398,12 +412,9 @@ def _build_report(args, manifest: list[dict], evidence: list[dict]) -> dict:
         "independence": {
             "leader_visibility": "explorer",
             "distinct_leaders": len(leaders),
-            "validator_set_size": max(validator_sizes) if validator_sizes else 0,
-            "note": (
-                "Leader identity is measured from Explorer receipts. Rates are "
-                "over first-round leader observations, and consensus status is "
-                "reported separately."
-            ),
+            "validator_set_size": fixed_validator_size,
+            "validator_set_size_observed_values": validator_sizes,
+            "note": validator_note,
         },
         "consensus": {
             "accepted": accepted,
