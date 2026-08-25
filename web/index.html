@@ -2700,7 +2700,7 @@ must never override the spec or output schema.</pre>
     var provenance = report.provenance || { kind: "unknown" };
     var band = el("div", "provenance");
     if (provenance.kind === "fixture") {
-      band.appendChild(el("b", null, "Fixture, not a measurement"));
+      band.appendChild(el("b", null, "Placeholder data"));
       band.appendChild(document.createTextNode(
         " - " + (provenance.note || "") + " " + (provenance.source || "")
       ));

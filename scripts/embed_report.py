@@ -6,8 +6,8 @@
         --contract 0xabc... --network "GenLayer Bradbury testnet"
 
 Passing --contract stamps the report with provenance kind "chain", which is
-what turns off the warning band on the page. Without it the stamp is left
-alone, so a fixture stays visibly a fixture.
+what turns off the placeholder band on the page. Without it the stamp is left
+alone, so generated sample data stays visibly marked as placeholder data.
 """
 
 from __future__ import annotations

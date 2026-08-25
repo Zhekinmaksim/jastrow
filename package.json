@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "build": "vite build",
+    "build": "vite build && cp web/report.json dist/report.json",
     "preview": "vite preview --host 0.0.0.0",
     "check:page": "python3 scripts/check_page_math.py"
   },
