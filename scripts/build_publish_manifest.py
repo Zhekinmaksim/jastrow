@@ -7,9 +7,9 @@ those transient failures, and it also should not count replacement transactions
 on top of broken originals.
 
 This script takes one or more JSONL manifests, keeps only transactions whose
-terminal receipt is present in the collector cache, and writes exactly k rows
-per input label. If any label is still short, it exits non-zero and leaves the
-output untouched.
+terminal receipt and decoded observation trace are present in the collector
+cache, and writes exactly k rows per input label. If any label is still short,
+it exits non-zero and leaves the output untouched.
 """
 
 from __future__ import annotations
@@ -18,6 +18,8 @@ import argparse
 import json
 import pathlib
 import sys
+
+import receipt_report
 
 
 TERMINAL_STATUSES = {"ACCEPTED", "FINALIZED", "UNDETERMINED", "SUCCESS"}
@@ -64,6 +66,10 @@ def main() -> int:
             if not isinstance(receipt, dict):
                 continue
             if _receipt_status(receipt) not in TERMINAL_STATUSES:
+                continue
+            trace = (cache.get("traces") or {}).get(row.get("tx_hash")) or (cache.get("traces") or {}).get(tx_hash)
+            observation, _ = receipt_report._observation_from_trace(trace if isinstance(trace, str) else "")
+            if not observation:
                 continue
             by_hash[tx_hash] = row
 

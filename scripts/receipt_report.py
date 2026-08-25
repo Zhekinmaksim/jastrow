@@ -28,7 +28,21 @@ RESERVED = (
     jastrow.TOKEN_MALFORMED,
 )
 OBS_RE = re.compile(r"JASTROW_OBSERVATION=(\{.*?\})(?:\n|$)")
+RETURN_RE = re.compile(r"return_data:\s*'([^']+)'")
 TERMINAL_STATUSES = ("ACCEPTED", "FINALIZED", "UNDETERMINED", "SUCCESS")
+
+BITS_IN_TYPE = 3
+TYPE_SPECIAL = 0
+TYPE_PINT = 1
+TYPE_NINT = 2
+TYPE_BYTES = 3
+TYPE_STR = 4
+TYPE_ARR = 5
+TYPE_MAP = 6
+SPECIAL_NULL = 0 << BITS_IN_TYPE | TYPE_SPECIAL
+SPECIAL_FALSE = 1 << BITS_IN_TYPE | TYPE_SPECIAL
+SPECIAL_TRUE = 2 << BITS_IN_TYPE | TYPE_SPECIAL
+SPECIAL_ADDR = 3 << BITS_IN_TYPE | TYPE_SPECIAL
 
 
 def _canonical(value) -> str:
@@ -123,7 +137,7 @@ def _trace(tx_hash: str, rpc: str | None, timeout: float) -> str:
 
 def _trace_cached(args, cache: dict, tx_hash: str) -> tuple[str, str]:
     cached = cache.setdefault("traces", {}).get(tx_hash)
-    if isinstance(cached, str) and OBS_RE.search(cached):
+    if isinstance(cached, str) and _observation_from_trace(cached)[0]:
         return cached, "cache"
 
     last_text = ""
@@ -133,7 +147,7 @@ def _trace_cached(args, cache: dict, tx_hash: str) -> tuple[str, str]:
         except (subprocess.SubprocessError, TimeoutError) as exc:
             text = str(exc)
         last_text = text
-        if OBS_RE.search(text):
+        if _observation_from_trace(text)[0]:
             cache["traces"][tx_hash] = text
             _save_cache(args.cache, cache)
             return text, "network"
@@ -144,12 +158,99 @@ def _trace_cached(args, cache: dict, tx_hash: str) -> tuple[str, str]:
 
 def _observation_from_trace(text: str) -> tuple[dict, str]:
     match = OBS_RE.search(text)
+    if match:
+        try:
+            return json.loads(match.group(1)), ""
+        except json.JSONDecodeError as exc:
+            return {}, "bad JASTROW_OBSERVATION marker: " + str(exc)
+    return _observation_from_return_data(text)
+
+
+def _read_uleb128(data: bytes, index: list[int]) -> int:
+    result = 0
+    shift = 0
+    while True:
+        if index[0] >= len(data):
+            raise ValueError("unterminated uleb128")
+        byte = data[index[0]]
+        index[0] += 1
+        result += (byte & 0x7F) << shift
+        if byte < 0x80:
+            return result
+        shift += 7
+
+
+def _decode_calldata(data: bytes, index: list[int]):
+    current = _read_uleb128(data, index)
+    if current == SPECIAL_NULL:
+        return None
+    if current == SPECIAL_FALSE:
+        return False
+    if current == SPECIAL_TRUE:
+        return True
+    if current == SPECIAL_ADDR:
+        raw = data[index[0] : index[0] + 20]
+        index[0] += 20
+        return "0x" + raw.hex()
+
+    value_type = current & ((1 << BITS_IN_TYPE) - 1)
+    rest = current >> BITS_IN_TYPE
+    if value_type == TYPE_BYTES:
+        raw = data[index[0] : index[0] + rest]
+        index[0] += rest
+        return raw
+    if value_type == TYPE_PINT:
+        return int(rest)
+    if value_type == TYPE_NINT:
+        return -1 - int(rest)
+    if value_type == TYPE_STR:
+        raw = data[index[0] : index[0] + rest]
+        index[0] += rest
+        return raw.decode("utf-8")
+    if value_type == TYPE_ARR:
+        return [_decode_calldata(data, index) for _ in range(rest)]
+    if value_type == TYPE_MAP:
+        out = {}
+        for _ in range(rest):
+            key_len = _read_uleb128(data, index)
+            key = data[index[0] : index[0] + key_len].decode("utf-8")
+            index[0] += key_len
+            out[key] = _decode_calldata(data, index)
+        return out
+    raise ValueError("bad calldata type " + str(value_type))
+
+
+def _decode_return_data(hex_value: str):
+    if not hex_value.startswith("0x"):
+        raise ValueError("return_data is not hex")
+    data = bytes.fromhex(hex_value[2:])
+    index = [0]
+    decoded = _decode_calldata(data, index)
+    if index[0] != len(data):
+        raise ValueError("unused return_data bytes")
+    return decoded
+
+
+def _observation_from_return_data(text: str) -> tuple[dict, str]:
+    match = RETURN_RE.search(text)
     if not match:
-        return {}, "missing JASTROW_OBSERVATION marker"
+        return {}, "missing JASTROW_OBSERVATION marker and return_data"
     try:
-        return json.loads(match.group(1)), ""
-    except json.JSONDecodeError as exc:
-        return {}, "bad JASTROW_OBSERVATION marker: " + str(exc)
+        decoded = _decode_return_data(match.group(1))
+    except (ValueError, UnicodeDecodeError) as exc:
+        return {}, "bad return_data: " + str(exc)
+    if isinstance(decoded, str):
+        try:
+            decoded = json.loads(decoded)
+        except json.JSONDecodeError as exc:
+            return {}, "return_data is not observation JSON: " + str(exc)
+    if isinstance(decoded, dict) and isinstance(decoded.get("data"), dict):
+        decoded = decoded["data"]
+    if not isinstance(decoded, dict):
+        return {}, "return_data is not an observation object"
+    if "answer" not in decoded or "confidence" not in decoded:
+        return {}, "return_data observation is missing answer/confidence"
+    return decoded, ""
 
 
 def _status(receipt: dict) -> str:
