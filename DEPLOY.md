@@ -81,7 +81,11 @@ python3 scripts/receipt_report.py runs/bradbury-probes.jsonl \
   --title "Campaign rule v3" \
   --spec-hash YOUR_SPEC_HASH \
   --vocabulary ACCEPT,REJECT \
+  --cache runs/bradbury-receipts-cache.json \
+  --fetch-attempts 3 \
+  --trace-attempts 2 \
   --require-terminal \
+  --require-observation \
   --require-complete-k 5 \
   --out web/report.json
 ```
@@ -90,6 +94,25 @@ If some transactions are still pending, wait and rerun the collector. The
 manifest is the source of truth. The `--require-terminal` and
 `--require-complete-k` flags prevent an unfinished Bradbury run from being
 published as the final report.
+
+If Explorer keeps returning intermittent `FETCH_ERROR` for transactions that
+were already seen as terminal, keep the `--cache` file and rerun the collector.
+The cache stores terminal receipts and traces that carried the
+`JASTROW_OBSERVATION` marker, so a later Explorer timeout does not erase earlier
+evidence. If a few hashes never become readable, submit replacement probes for
+those inputs and build a clean publish manifest from cached terminal receipts:
+
+```bash
+python3 scripts/build_publish_manifest.py \
+  runs/bradbury-probes.jsonl \
+  runs/bradbury-replacements.jsonl \
+  --cache runs/bradbury-receipts-cache.json \
+  --out runs/bradbury-publish.jsonl \
+  --k 5
+```
+
+Then run `receipt_report.py` against `runs/bradbury-publish.jsonl`. Do not count
+a broken original and its replacement in the same published sample.
 
 ## 5. Sanity check the result
 

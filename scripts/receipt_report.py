@@ -10,6 +10,7 @@ import pathlib
 import re
 import subprocess
 import sys
+import time
 import urllib.error
 import urllib.request
 
@@ -27,6 +28,7 @@ RESERVED = (
     jastrow.TOKEN_MALFORMED,
 )
 OBS_RE = re.compile(r"JASTROW_OBSERVATION=(\{.*?\})(?:\n|$)")
+TERMINAL_STATUSES = ("ACCEPTED", "FINALIZED", "UNDETERMINED", "SUCCESS")
 
 
 def _canonical(value) -> str:
@@ -49,6 +51,33 @@ def _load_jsonl(path: pathlib.Path) -> list[dict]:
     return rows
 
 
+def _load_cache(path: pathlib.Path | None) -> dict:
+    if not path or not path.exists():
+        return {"receipts": {}, "traces": {}}
+    try:
+        cache = json.loads(path.read_text())
+    except json.JSONDecodeError as exc:
+        raise SystemExit(str(path) + ": " + str(exc))
+    if not isinstance(cache, dict):
+        return {"receipts": {}, "traces": {}}
+    receipts = cache.get("receipts")
+    traces = cache.get("traces")
+    if not isinstance(receipts, dict):
+        cache["receipts"] = {}
+    if not isinstance(traces, dict):
+        cache["traces"] = {}
+    return cache
+
+
+def _save_cache(path: pathlib.Path | None, cache: dict) -> None:
+    if not path:
+        return
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(path.name + ".tmp")
+    tmp.write_text(json.dumps(cache, indent=2, sort_keys=True) + "\n")
+    tmp.replace(path)
+
+
 def _fetch_json(url: str, timeout: float) -> dict:
     request = urllib.request.Request(url, headers={"accept": "application/json"})
     with urllib.request.urlopen(request, timeout=timeout) as response:
@@ -59,12 +88,58 @@ def _receipt(explorer: str, tx_hash: str, timeout: float) -> dict:
     return _fetch_json(explorer.rstrip("/") + "/api/v1/transactions/" + tx_hash, timeout)
 
 
+def _terminal(status: str) -> bool:
+    return status in TERMINAL_STATUSES
+
+
+def _receipt_cached(args, cache: dict, tx_hash: str) -> tuple[dict, str]:
+    cached = cache.setdefault("receipts", {}).get(tx_hash)
+    if isinstance(cached, dict) and _terminal(_status(cached)):
+        return cached, "cache"
+
+    last_error = ""
+    for attempt in range(max(1, args.fetch_attempts)):
+        try:
+            receipt = _receipt(args.explorer, tx_hash, args.timeout)
+            status = _status(receipt)
+            if _terminal(status):
+                cache["receipts"][tx_hash] = receipt
+                _save_cache(args.cache, cache)
+            return receipt, "network"
+        except Exception as exc:
+            last_error = str(exc)
+            if attempt + 1 < max(1, args.fetch_attempts):
+                time.sleep(max(0.0, args.fetch_delay))
+    return {"fetch_error": last_error}, "error"
+
+
 def _trace(tx_hash: str, rpc: str | None, timeout: float) -> str:
     command = ["genlayer", "trace", tx_hash, "--round", "0"]
     if rpc:
         command += ["--rpc", rpc]
     result = subprocess.run(command, capture_output=True, text=True, timeout=timeout)
     return result.stdout + result.stderr
+
+
+def _trace_cached(args, cache: dict, tx_hash: str) -> tuple[str, str]:
+    cached = cache.setdefault("traces", {}).get(tx_hash)
+    if isinstance(cached, str) and OBS_RE.search(cached):
+        return cached, "cache"
+
+    last_text = ""
+    for attempt in range(max(1, args.trace_attempts)):
+        try:
+            text = _trace(tx_hash, args.rpc, args.timeout)
+        except (subprocess.SubprocessError, TimeoutError) as exc:
+            text = str(exc)
+        last_text = text
+        if OBS_RE.search(text):
+            cache["traces"][tx_hash] = text
+            _save_cache(args.cache, cache)
+            return text, "network"
+        if attempt + 1 < max(1, args.trace_attempts):
+            time.sleep(max(0.0, args.trace_delay))
+    return last_text, "error"
 
 
 def _observation_from_trace(text: str) -> tuple[dict, str]:
@@ -268,9 +343,27 @@ def main() -> int:
     parser.add_argument("--rpc")
     parser.add_argument("--timeout", type=float, default=30.0)
     parser.add_argument(
+        "--cache",
+        type=pathlib.Path,
+        help=(
+            "JSON cache for terminal receipts and successful traces. This is useful on "
+            "Bradbury, where the Explorer API can intermittently time out for receipts "
+            "that it has already returned."
+        ),
+    )
+    parser.add_argument("--fetch-attempts", type=int, default=1)
+    parser.add_argument("--fetch-delay", type=float, default=1.0)
+    parser.add_argument("--trace-attempts", type=int, default=1)
+    parser.add_argument("--trace-delay", type=float, default=1.0)
+    parser.add_argument(
         "--require-terminal",
         action="store_true",
         help="exit non-zero if any transaction is still pending or could not be fetched",
+    )
+    parser.add_argument(
+        "--require-observation",
+        action="store_true",
+        help="exit non-zero if any terminal transaction lacks a JASTROW_OBSERVATION trace marker",
     )
     parser.add_argument(
         "--require-complete-k",
@@ -281,23 +374,21 @@ def main() -> int:
     args = parser.parse_args()
 
     manifest = _load_jsonl(args.manifest)
+    cache = _load_cache(args.cache)
     evidence = []
     for index, row in enumerate(manifest, 1):
         tx_hash = row["tx_hash"]
-        try:
-            receipt = _receipt(args.explorer, tx_hash, args.timeout)
-        except Exception as exc:
-            receipt = {"fetch_error": str(exc)}
+        receipt, receipt_source = _receipt_cached(args, cache, tx_hash)
         trace_text = ""
         trace_error = ""
         status = _status(receipt) if not receipt.get("fetch_error") else "FETCH_ERROR"
-        terminal = status in ("ACCEPTED", "FINALIZED", "UNDETERMINED", "SUCCESS")
+        terminal = _terminal(status)
+        trace_source = ""
         if terminal:
-            try:
-                trace_text = _trace(tx_hash, args.rpc, args.timeout)
-            except (subprocess.SubprocessError, TimeoutError) as exc:
-                trace_error = str(exc)
+            trace_text, trace_source = _trace_cached(args, cache, tx_hash)
         observation, parse_error = _observation_from_trace(trace_text)
+        if terminal and trace_source == "error":
+            trace_error = "trace unavailable"
         item = {
             "tx_hash": tx_hash,
             "spec_id": int(row["spec_id"]),
@@ -305,6 +396,8 @@ def main() -> int:
             "label": str(row["label"]),
             "round": int(row.get("round", 0)),
             "status": status,
+            "receipt_source": receipt_source,
+            "trace_source": trace_source,
             "execution_result": str(receipt.get("execution_result") or receipt.get("txExecutionResultName") or ""),
             "leader": _leader(receipt),
             "validator_set_size": _validator_count(receipt),
@@ -313,7 +406,15 @@ def main() -> int:
             "parse_error": parse_error or trace_error or ("" if terminal else "transaction not terminal"),
         }
         evidence.append(item)
-        print(str(index) + "/" + str(len(manifest)) + " " + tx_hash + " " + item["status"], flush=True)
+        source_note = ""
+        if receipt_source == "cache":
+            source_note += " receipt-cache"
+        if trace_source == "cache":
+            source_note += " trace-cache"
+        print(
+            str(index) + "/" + str(len(manifest)) + " " + tx_hash + " " + item["status"] + source_note,
+            flush=True,
+        )
 
     report = _build_report(args, manifest, evidence)
     if args.require_terminal:
@@ -336,6 +437,28 @@ def main() -> int:
                     file=sys.stderr,
                 )
             return 2
+    if args.require_observation:
+        missing_observation = [
+            item
+            for item in evidence
+            if _terminal(item["status"]) and not item.get("observation")
+        ]
+        if missing_observation:
+            for item in missing_observation:
+                print(
+                    "missing-observation "
+                    + item["tx_hash"]
+                    + " "
+                    + item["label"]
+                    + " r"
+                    + str(item["round"])
+                    + " "
+                    + item["status"]
+                    + " "
+                    + item.get("parse_error", ""),
+                    file=sys.stderr,
+                )
+            return 4
     if args.require_complete_k:
         incomplete = [
             row
