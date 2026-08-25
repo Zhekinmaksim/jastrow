@@ -103,13 +103,12 @@ will judge the contract.
 
 Jastrow uses GenLayer's own validator set as the instrument.
 
-The local builder-program corpus also shows why this has to be a tool, not just
-a report. In a 1,329-project export, entries containing “report” average 13.14
-points and entries containing “dashboard” average 14.21 points. The same export
-contains 1,249 GitHub repositories and 826 full contract addresses for the next
-corpus run. GLBench scored 34 by measuring consensus behavior on the builder's
-own object. Jastrow follows that shape: the object is not the validator, it is
-the builder's specification.
+The local builder-program corpus was used only for positioning, not as a
+submitted ecosystem measurement. The final submission does not claim a completed
+run over live contracts from that corpus, because the full address list and
+per-contract receipts are not committed here. Jastrow follows the GLBench shape
+at the product level: the object being measured is not the validator, it is the
+builder's specification.
 
 ## Live evidence to include before final submit
 

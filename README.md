@@ -173,26 +173,21 @@ not just that the mean score is high.
 
 ## Builder-program corpus
 
-`data/portal-corpus-summary.json` is a derived summary from a local export of
-1,329 GenLayer builder submissions. The raw export is not committed; the script
-that regenerates the summary is:
+Jastrow was positioned against a local builder-program export, but the final
+submission does not claim an ecosystem-wide live-contract measurement. That
+would need the raw export, the full address list, and the per-contract run
+outputs committed together so reviewers can recalculate the number.
+
+The helper that can regenerate a corpus snapshot from a portal markdown export
+is:
 
 ```bash
 python3 scripts/corpus_snapshot.py /path/to/genlayer_builder_projects.md
 ```
 
-The current snapshot says:
-
-- 1,249 GitHub repositories are extractable from the export
-- 826 full contract addresses are extractable from the export
-- entries containing “report” average 13.14 points
-- entries containing “dashboard” average 14.21 points
-- GLBench scored 34 points
-
-That is not a finished Jastrow measurement over the ecosystem. It is the
-benchmark context for the next step: run Jastrow-style batteries against live
-contracts from the corpus and publish the percentage whose specs exceed a
-divergence threshold.
+Until those derived address lists and receipt outputs are committed, the corpus
+is only roadmap context. The verifier-facing measurement in this repository is
+the Bradbury receipt-backed report in `web/report.json`.
 
 ## Repository layout
 
@@ -206,10 +201,9 @@ scripts/receipt_report.py   builds the report from Explorer receipts and traces
 scripts/check_report.py     audits report math and evidence
 scripts/embed_report.py     embeds a report into the web page
 scripts/jastrow_gate.py     DECIDABLE / AMBIGUOUS / UNDECIDABLE CI gate
-scripts/corpus_snapshot.py  derives scoring context from the builder corpus
+scripts/corpus_snapshot.py  derives local scoring context from a portal export
 web/index.html              public report page
 web/src/live.js             browser wallet call to the live contract
-data/portal-corpus-summary.json  derived builder-program corpus snapshot
 examples/demo-ambiguous-report.json  instant demo for the CI gate
 test/                       local tests with a small GenLayer stub
 reel/                       video source
