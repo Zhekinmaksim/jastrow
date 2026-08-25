@@ -72,14 +72,21 @@ to batch. The transaction count is the sample size; they are the same number.
 
 ## GEN figures
 
-The current v2 contract is deployed and the reference battery is partly
-submitted, but the run is not complete. As of the latest guarded collector run,
-25/40 probe hashes exist and most receipts are still `PENDING` or temporarily
-unfetchable. The next probe reverts before a hash is printed while the
-account/consensus queue is full.
+The live Bradbury report is built from `runs/bradbury-v2-publish.jsonl`, a clean
+40-transaction publish manifest with exactly five usable receipt-backed
+observations for each of the eight inputs. The report hash is
+`480bb949d6576b7b2900826ce03684942b3ebffb61a1113d7a72eb941fd3187b`.
 
-Do not publish a battery total from this partial state. Fill the final rows only
-after `receipt_report.py --require-terminal --require-complete-k 5` succeeds.
+The probe cost below is read from `web/report.json`:
+
+| item | transactions | GEN |
+| --- | ---: | ---: |
+| probe, one transaction, mean over this run | 1 | 0.00314348753696362375 |
+| reference probe battery | 40 | 0.12573950147854495 |
+
+This is the probe battery only. It does not claim a registration, input-addition
+or `commit_report` cost unless that transaction is present in the receipt
+evidence. No number in this section is extrapolated from an estimate.
 
 The earlier gate run below is archived evidence from the first mechanism. These
 numbers are receipt data, not estimates:
@@ -93,18 +100,5 @@ numbers are receipt data, not estimates:
 | comparative probe, ending `NONDET_DISAGREE` | `0x5c94…ae0` | 0.0030255926619977 |
 | non-comparative gate deployment | `0x1b24…45ff` | 0.0014623065092118 |
 
-Do not extrapolate the failed comparative probe into a battery estimate: it
-did not settle and therefore is not the unit cost of a successful sample. Once
-the gate passes, fill the remaining rows from that run's receipts:
-
-```
-python3 cli/jastrow.py --print battery calibration/battery.json --k 5
-genlayer receipt <tx hash>
-```
-
-| item | GEN |
-| --- | --- |
-| successful non-comparative probe, one transaction | not observed |
-| probe, one transaction | to be filled from receipts |
-| commit_report, 8 inputs | to be filled from receipts |
-| reference battery, 50 transactions | to be filled from receipts |
+Do not extrapolate the failed comparative probe into a battery estimate: it did
+not settle and therefore is not the unit cost of a successful sample.

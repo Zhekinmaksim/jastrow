@@ -118,23 +118,24 @@ the builder's specification.
 - Contract address: `0xC8823fdeA01961D65b569D00C09c541E5615CC69`
 - Deploy tx:
   `0x1bb7db3c0c2c2f1d639ca742cc36e8e5f0f17b58cc8642b88ef0e85186d61ef0`
-- Current embedded report: fixture only, not a live measurement
-- Live probe manifest: `runs/bradbury-v2-probes.jsonl`, 37/40 hashes submitted
-- Current blocker: Bradbury still returns pending/fetch-error receipts and
-  rejects the next probe while the account/consensus queue is full
+- Current embedded report: receipt-backed live Bradbury measurement
+- Live probe manifest: `runs/bradbury-v2-publish.jsonl`, 40/40 usable terminal
+  receipts, five observations per input
+- Report hash:
+  `480bb949d6576b7b2900826ce03684942b3ebffb61a1113d7a72eb941fd3187b`
+- Evidence root:
+  `93b17d1ba86dcdfbb72b930c0186dc70846fbda1dd1bf82e622d66ce5306d792`
+- Validator set size: 17
+- Distinct leaders: 23
+- Consensus: 40 accepted/finalized, 0 undetermined
+- GEN probe cost: 0.12573950147854495 GEN across 40 probe transactions
 - Challenge-market methods are present in source and local tests. Deploy them
   only if restarting the live contract is acceptable, because the current
   Bradbury report manifest belongs to the address above.
-- Report hash: fill only after `receipt_report.py --require-terminal
-  --require-complete-k 5` succeeds
-- Evidence root: fill only after the same successful receipt report
-- Validator set size: fill from the final receipt evidence
-- Distinct leaders: fill from the final Explorer receipt evidence
-- GEN costs: fill from final receipts in `COSTS.md`
 
 ## Limits stated up front
 
-- A fixture report is not a measurement.
+- The report is a receipt-backed measurement, not the earlier fixture.
 - Accepted-only contract storage is not the full report.
 - `UNDETERMINED` is part of the evidence.
 - Leader counts come from receipts until the contract runtime exposes leader
