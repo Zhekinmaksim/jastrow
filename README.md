@@ -75,14 +75,20 @@ the report later.
 - Repository: <https://github.com/Zhekinmaksim/jastrow>
 - Vercel page: <https://jastrow.vercel.app>
 - Bradbury contract: `0xC8823fdeA01961D65b569D00C09c541E5615CC69`
+- Deploy receipt: <https://explorer-bradbury.genlayer.com/transactions/0x1bb7db3c0c2c2f1d639ca742cc36e8e5f0f17b58cc8642b88ef0e85186d61ef0>
 
 The page includes a live contract panel. A reviewer can connect a wallet, choose
 an input, submit `probe(spec_id, input_id)`, receive the transaction hash, and
 watch the transaction move through the normal GenLayer lifecycle.
 
-If the embedded report says it is a fixture, treat it as a fixture. The repo is
-set up so the fixture can be replaced by a receipt-backed report after the
-Bradbury transactions settle.
+The embedded page report is the receipt-backed Bradbury measurement. The only
+fixture in the repository is `examples/demo-ambiguous-report.json`, which exists
+for an instant recording of the CI gate and is labelled as off-chain demo data.
+
+The current live run has 40 terminal receipts, 7 of 8 inputs rated, and one
+unrated `in-reply` input. Running the gate against the live report therefore
+returns `UNDECIDABLE` with exit code `2`; that is the measurement's result, not
+an error hidden by the page.
 
 ## What the report measures
 
@@ -221,6 +227,22 @@ npm run build
 page math.
 
 ## Real Bradbury run
+
+The published receipt manifest is `runs/bradbury-v2-publish.jsonl`. It contains
+the 40 public transaction hashes used by `web/report.json`, so a reviewer can
+rebuild the same evidence locally:
+
+```bash
+python3 scripts/receipt_report.py runs/bradbury-v2-publish.jsonl \
+  --address 0xC8823fdeA01961D65b569D00C09c541E5615CC69 \
+  --spec 0 \
+  --title "Campaign rule v3" \
+  --spec-hash 59253650a1d7f869737bca03cba7eaa5c99a472e \
+  --vocabulary ACCEPT,REJECT \
+  --require-terminal \
+  --require-complete-k 5 \
+  --out web/report.json
+```
 
 You need Python 3, Node, the official `genlayer` CLI, and a funded Bradbury
 testnet account.

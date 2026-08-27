@@ -365,6 +365,22 @@ p { text-wrap: pretty; }
 .provenance.is-chain { border-left-color: var(--edge); color: var(--muted); }
 .provenance.is-receipts { border-left-color: var(--dial); color: var(--prose); }
 
+.live-verdict {
+  margin-top: 12px;
+  border-left: 3px solid var(--edge);
+  background: var(--face);
+  padding: 12px 16px;
+  color: var(--muted);
+  font-family: var(--data);
+  font-size: 12px;
+  line-height: 1.55;
+}
+.live-verdict strong { color: var(--ink); font-weight: 500; }
+.live-verdict.is-ambiguous { border-left-color: var(--dial); }
+.live-verdict.is-undecidable { border-left-color: #c77967; }
+.live-verdict.is-decidable { border-left-color: #8fb89a; }
+.live-verdict code { color: var(--ink); }
+
 /* ---------- live contract call ---------- */
 
 .live-panel {
@@ -543,6 +559,13 @@ p { text-wrap: pretty; }
   min-height: 36px;
   padding: 0 12px;
   font-size: 12px;
+}
+.wallet-proof-note {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-family: var(--data);
+  font-size: 11px;
+  line-height: 1.45;
 }
 
 /* ---------- contract check demo ---------- */
@@ -1032,6 +1055,7 @@ details .after { margin: 0; padding: 0 20px 20px; color: var(--muted); font-size
 
   <dl class="figures" id="figures"></dl>
   <div id="provenance"></div>
+  <div id="live-verdict" aria-live="polite"></div>
 
   <section class="contract-check" id="contract-check" aria-labelledby="contract-check-title">
     <div>
@@ -1085,7 +1109,7 @@ details .after { margin: 0; padding: 0 20px 20px; color: var(--muted); font-size
           <dd id="live-contract">not set</dd>
         </div>
         <div>
-          <dt>GenLayer tx</dt>
+          <dt>Consensus tx</dt>
           <dd id="live-tx">none</dd>
         </div>
         <div>
@@ -1101,6 +1125,7 @@ details .after { margin: 0; padding: 0 20px 20px; color: var(--muted); font-size
         <input id="wallet-tx-input" inputmode="text" spellcheck="false" placeholder="Paste wallet tx hash">
         <button class="live-button secondary" type="button" id="wallet-tx-save">Show</button>
       </div>
+      <p class="wallet-proof-note">Wallet tx opens the ZKsync explorer. Consensus tx opens the Bradbury receipt explorer.</p>
     </div>
   </section>
 
@@ -2725,6 +2750,50 @@ must never override the spec or output schema.</pre>
     document.getElementById("provenance").appendChild(band);
   }
 
+  function renderLiveVerdict(report) {
+    var host = document.getElementById("live-verdict");
+    host.textContent = "";
+    var provenance = report.provenance || {};
+    if (provenance.kind === "fixture") {
+      host.className = "live-verdict";
+      host.appendChild(el("strong", null, "OFF-CHAIN DEMO"));
+      host.appendChild(document.createTextNode(" — this report is for the instant CLI walkthrough, not a chain measurement."));
+      return;
+    }
+
+    var rows = report.rows || [];
+    var unrated = rows.filter(function (row) { return !row.rated; });
+    var malformed = rows.filter(function (row) { return Number(row.malformed_milli || 0) > 50; });
+    var verdict = "DECIDABLE";
+    var code = 0;
+    var reasons = [];
+    if (unrated.length) {
+      verdict = "UNDECIDABLE";
+      code = 2;
+      reasons.push(unrated.length + " unrated input" + (unrated.length === 1 ? "" : "s") + ": " + unrated.map(function (row) { return row.label; }).join(", "));
+    }
+    if (malformed.length) {
+      verdict = "UNDECIDABLE";
+      code = 2;
+      reasons.push("malformed output above 0.050: " + malformed.map(function (row) { return row.label; }).join(", "));
+    }
+    if (!reasons) reasons = [];
+    if (!reasons.length) {
+      var split = rows.filter(function (row) { return Number(row.d_milli || 0) >= 250; });
+      if (split.length) {
+        verdict = "AMBIGUOUS";
+        code = 1;
+        reasons.push("divergence at or above 0.250: " + split.map(function (row) { return row.label + "=" + dp(row.d_milli); }).join(", "));
+      } else {
+        reasons.push("all rated inputs are below D 0.250");
+      }
+    }
+    host.className = "live-verdict is-" + verdict.toLowerCase();
+    host.appendChild(el("strong", null, "LIVE GATE · " + verdict + " / " + code));
+    host.appendChild(document.createElement("br"));
+    host.appendChild(document.createTextNode(reasons.join("; ")));
+  }
+
   function datum(label, value, note, className) {
     var group = el("div", className || null);
     group.appendChild(el("dt", "datum-label", label));
@@ -2825,6 +2894,7 @@ must never override the spec or output schema.</pre>
 
   function boot(report) {
     renderProvenance(report);
+    renderLiveVerdict(report);
     render(report);
     var redraw = function () {
       renderReadings(report, Math.max((report.vocabulary || []).length, 2));

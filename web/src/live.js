@@ -96,6 +96,21 @@ function setWalletTx(hash) {
   return cleanHash;
 }
 
+function setContractLink(address) {
+  els.contract.textContent = "";
+  if (!address) {
+    els.contract.textContent = "not set";
+    return;
+  }
+  const link = document.createElement("a");
+  link.href = WALLET_EXPLORER.replace(/\/$/, "") + "/address/" + address;
+  link.rel = "noreferrer";
+  link.target = "_blank";
+  link.textContent = short(address);
+  link.title = address;
+  els.contract.appendChild(link);
+}
+
 function contractAddress() {
   return report?.provenance?.contract || report?.live_contract || "";
 }
@@ -333,7 +348,7 @@ function boot() {
   report = embeddedReport();
   populateInputs();
   const address = contractAddress();
-  els.contract.textContent = address ? short(address) : "not set";
+  setContractLink(address);
   if (!address) {
     els.submit.disabled = true;
     setStatus("No deployed contract embedded", "Run receipt_report and embed it before submission.");

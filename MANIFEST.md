@@ -22,7 +22,6 @@
 | `scripts/calibrate.py` | optional off-chain prompt calibration |
 | `scripts/jastrow_gate.py` | CI gate over a Jastrow report |
 | `scripts/corpus_snapshot.py` | derives builder-program corpus scoring context |
-| `data/portal-corpus-summary.json` | derived summary from the local 1,329-project corpus |
 | `examples/demo-ambiguous-report.json` | small non-chain report for recording the CI gate flow |
 
 ## Web

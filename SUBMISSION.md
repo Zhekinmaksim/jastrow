@@ -115,11 +115,11 @@ builder's specification.
 - Repository: https://github.com/Zhekinmaksim/jastrow
 - Vercel page: https://jastrow.vercel.app
 - Contract address: `0xC8823fdeA01961D65b569D00C09c541E5615CC69`
-- Deploy tx:
-  `0x1bb7db3c0c2c2f1d639ca742cc36e8e5f0f17b58cc8642b88ef0e85186d61ef0`
+- Deploy tx: [`0x1bb7db3c…d61ef0`](https://explorer-bradbury.genlayer.com/transactions/0x1bb7db3c0c2c2f1d639ca742cc36e8e5f0f17b58cc8642b88ef0e85186d61ef0)
 - Current embedded report: receipt-backed live Bradbury measurement
 - Live probe manifest: `runs/bradbury-v2-publish.jsonl`, 40/40 usable terminal
   receipts, five observations per input
+- Example probe receipt: [`0x819eb381…bd0b2`](https://explorer-bradbury.genlayer.com/transactions/0x819eb3812d37d70bc4d3b5d36ee974eaf624e5cd5c6a6a670211de8a6ddbd0b2)
 - Report hash:
   `83a6862538fdb05dda7725819dd9c5bbd2b24859768f3ee8bacfc834cfb9b4b2`
 - Evidence root:
@@ -127,7 +127,11 @@ builder's specification.
 - Observed validator committee sizes: 5, 11, 12, 17
 - Distinct first-round leaders across receipts: 23
 - No single validator set size is claimed for the whole 40-transaction sample
-- Consensus: 40 accepted/finalized, 0 undetermined
+- Consensus status: 40/40 terminal `FINALIZED` receipts, with execution
+  results `FINISHED_WITH_RETURN` 12, `NONDET_DISAGREE` 23, and `TIMEOUT` 5
+- The live gate result is `UNDECIDABLE` / exit `2`: 7 of 8 inputs are rated and
+  `in-reply` has only 1 of 5 answers scored; the run also records malformed
+  output for `quoted` and `in-reply`
 - GEN probe cost: 0.12573950147854495 GEN across 40 probe transactions
 - Challenge-market methods are present in source and local tests. Deploy them
   only if restarting the live contract is acceptable, because the current
@@ -136,6 +140,10 @@ builder's specification.
 ## Limits stated up front
 
 - The report is a receipt-backed measurement, not the earlier fixture.
+- The 40-line publish manifest is committed with the submission so the receipt
+  report can be regenerated from public transaction hashes.
+- The report hash is locally recomputable from those receipts; no on-chain
+  `commit_report` transaction is claimed until its receipt is included here.
 - Accepted-only contract storage is not the full report.
 - `UNDETERMINED` is part of the evidence.
 - Leader counts come from receipts until the contract runtime exposes leader

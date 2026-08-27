@@ -53,9 +53,10 @@ Point out:
 - the top row is the clause to rewrite;
 - `MALFORMED`, `OUT_OF_VOCAB`, and `UNSETTLED` are separate failure classes.
 
-If the page still says fixture, say that the live Bradbury receipt collection
-is still settling and the final publishable report is gated by
-`--require-terminal --require-complete-k 5`.
+The page is now backed by the settled receipt report. Point out that the live
+gate is intentionally `UNDECIDABLE / 2`: `in-reply` is unrated at 1/5 scored.
+The off-chain console above is labelled as a demo so it can be recorded without
+waiting for a new Bradbury transaction.
 
 ## 3. Show the live contract call
 
@@ -77,13 +78,14 @@ Scroll to:
 - “Put GEN behind the claim”: bonded challenge loop in source.
 - “Why specs split”: taxonomy of repair classes.
 - “The ecosystem benchmark”: 1,249 GitHub repositories and 826 contract
-  addresses extracted for the next corpus run.
+  addresses extracted for the next corpus run. Treat this as roadmap context,
+  not as a completed ecosystem measurement.
 
 ## 5. Do not claim these yet
 
 Do not say:
 
-- the embedded page report is the final live measurement while it is still a fixture;
+- the off-chain console output is a chain measurement;
 - the current Bradbury address has challenge-market methods;
 - the full 1,329-project corpus has already been measured by Jastrow.
 
